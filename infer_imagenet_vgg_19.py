@@ -10,12 +10,6 @@ def _input():
     x = tf.placeholder(dtype=tf.float32, shape=[None, 224, 224, 3], name='input')
     return x
 
-def _flatten(x):
-    shape = x.get_shape().as_list()
-    new_shape = np.prod(shape[1:])
-    x = tf.reshape(x, [-1, new_shape], name='flatten')
-    return x
-
 def vgg_net(weights, image):
     layers = (
         'conv1_1', 'relu1_1', 'conv1_2', 'relu1_2', 'pool1',
@@ -63,22 +57,23 @@ def inference(x, weights):
     return prediction, image_net
 
 def main(argv=None):
-    sess = tf.Session()
     img = imread(argv[1])
-    x = _input()
+    # tmp = loadmat('im_.mat')
 
-    pretrained_model = utils.get_model_data('pretrained_models/imagenet-vgg-verydeep-19.mat')
+    pretrained_model = utils.get_model_data('../pretrained_models/imagenet-vgg-verydeep-19.mat')
     mean = pretrained_model['normalization'][0][0][0]
     weights = np.squeeze(pretrained_model['layers'])
 
     resized_img = resize(img, (224, 224), preserve_range=True, mode='reflect')
     normalised_img = utils.process_image(resized_img, mean)
     
-    predicted_class, image_net = inference(x, weights)
-    sess.run(tf.global_variables_initializer())
-    tmp = loadmat('im_.mat')
-    score, category = sess.run([tf.reduce_max(image_net['prob'][0][0][0]), predicted_class],
-                                feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)})
+    with tf.device('/cpu:0'):
+        x = _input()
+        predicted_class, image_net = inference(x, weights)
+        sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+        sess.run(tf.global_variables_initializer())
+        score, category = sess.run([tf.reduce_max(image_net['prob'][0][0][0]), predicted_class],
+                                    feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)})
     print('Category:', pretrained_model['classes'][0][0][1][0][category][0])
     print('Score:', score)
 
