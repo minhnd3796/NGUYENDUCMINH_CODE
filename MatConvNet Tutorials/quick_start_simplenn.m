@@ -6,7 +6,7 @@ net = load('../../pretrained_models/imagenet-vgg-verydeep-19.mat');
 net = vl_simplenn_tidy(net);
 
 % Obtain and preprocess an image.
-im = imread('../test_images/dog.jpg') ;
+im = imread('../test_images/tank1.jpg') ;
 im_ = single(im); % note: 255 range
 resized_im = imresize(im_, net.meta.normalization.imageSize(1:2), 'AntiAliasing', false);
 im_ = resized_im - net.meta.normalization.averageImage;

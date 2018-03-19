@@ -70,7 +70,7 @@ def main(argv=None):
     with tf.device('/cpu:0'):
         x = _input()
         predicted_class, image_net = inference(x, weights)
-        sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+        sess = tf.Session(config=tf.ConfigProto(log_device_placement=False))
         sess.run(tf.global_variables_initializer())
         score, category = sess.run([tf.reduce_max(image_net['prob'][0][0][0]), predicted_class],
                                     feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)})
