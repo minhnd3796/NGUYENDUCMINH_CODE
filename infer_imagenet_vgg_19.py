@@ -60,9 +60,9 @@ def main(argv=None):
     img = imread(argv[1])
     # tmp = loadmat('im_.mat')
 
-    pretrained_model = utils.get_model_data('../pretrained_models/imagenet-vgg-verydeep-19.mat')
-    mean = pretrained_model['normalization'][0][0][0]
-    weights = np.squeeze(pretrained_model['layers'])
+    vgg19_net = utils.get_model_data('../pretrained_models/imagenet-vgg-verydeep-19.mat')
+    mean = vgg19_net['normalization'][0][0][0]
+    weights = np.squeeze(vgg19_net['layers'])
 
     resized_img = resize(img, (224, 224), preserve_range=True, mode='reflect')
     normalised_img = utils.process_image(resized_img, mean)
@@ -74,7 +74,7 @@ def main(argv=None):
         sess.run(tf.global_variables_initializer())
         score, category = sess.run([tf.reduce_max(image_net['prob'][0][0][0]), predicted_class],
                                     feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)})
-    print('Category:', pretrained_model['classes'][0][0][1][0][category][0])
+    print('Category:', vgg19_net['classes'][0][0][1][0][category][0])
     print('Score:', score)
 
 if __name__ == "__main__":
