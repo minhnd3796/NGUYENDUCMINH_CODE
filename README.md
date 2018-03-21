@@ -25,11 +25,7 @@ File tensor_utils.py gồm các hàm hỗ trợ cho quá trình cài đặt các
 
 Quy trình tiến hành huấn luyện và suy diễn:
 - Download dữ liệu và giải nén.
-- Chạy file convert_to_annotations.py với tập dữ liệu tương ứng.
+- Chạy file convert_gt2annotations.py với tập dữ liệu tương ứng.
 - Chạy các file sampling_image.py để lấy mẫu dữ liệu.
-- Chạy các mô hình ở các file tương ứng với dữ liệu lấy mẫu.
+- Chạy các mô hình ở các file tương ứng với dữ liệu lấy mẫu. e.g. fully_convnets.py
 - Cuối cùng, sử dụng file infer_little_image*.py để dự đoán ảnh trong tập dữ liệu tương ứng với tập ảnh lấy mẫu.
-
-
-
-

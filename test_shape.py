@@ -26,6 +26,7 @@ W_conv1 = weight_variable([7, 7, 3, 64], kernel)
 # b_conv1 = bias_variable([64])
 result = conv2d(x, W_conv1)
 shape = tf.shape(result)
+print(result.shape)
 tmp = utils.get_model_data('MatConvNet Tutorials/im_dagnn_tank1.mat')
 
 with tf.Session() as sess:
