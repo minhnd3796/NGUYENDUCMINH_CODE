@@ -12,10 +12,10 @@ import tensor_utils as utils
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "5", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "logs/", "path to logs directory")
-tf.flags.DEFINE_string("data_dir", "ISPRS_semantic_labeling_Vaihingen", "path to dataset")
+tf.flags.DEFINE_string("logs_dir", "../logs/", "path to logs directory")
+tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-5", "Learning rate for Adam Optimizer")
-tf.flags.DEFINE_string("model_dir", "ISPRS_semantic_labeling_Vaihingen/imagenet-vgg-verydeep-19.mat",
+tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat",
                        "Path to vgg model mat")
 tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
 tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
@@ -47,7 +47,7 @@ def vgg_net(weights, image):
             kernels, bias = weights[i][0][0][0][0]
             # matconvnet: weights are [width, height, in_channels, out_channels]
             # tensorflow: weights are [height, width, in_channels, out_channels]
-            kernels = utils.get_variable(np.transpose(kernels, (1, 0, 2, 3)), name=name + "_w")
+            kernels = utils.get_variable(kernels, name=name + "_w")
             bias = utils.get_variable(bias.reshape(-1), name=name + "_b")
             current = utils.conv2d_basic(current, kernels, bias)
         elif kind == 'relu':
@@ -68,7 +68,7 @@ def inference(image, keep_prob):
     :param keep_prob:
     :return:
     """
-    print("setting up vgg initialized conv layers ...")
+    print(">> Setting up vgg initialized conv layers ...")
     model_data = utils.get_model_data(FLAGS.model_dir)
 
     mean = model_data['normalization'][0][0][0]
@@ -124,7 +124,7 @@ def inference(image, keep_prob):
         b_t3 = utils.bias_variable([NUM_OF_CLASSESS], name="b_t3")
         conv_t3 = utils.conv2d_transpose_strided(fuse_2, W_t3, b_t3, output_shape=deconv_shape3, stride=8)
 
-        annotation_pred = tf.argmax(conv_t3, dimension=3, name="prediction")
+        annotation_pred = tf.argmax(conv_t3, axis=3, name="prediction")
 
     return tf.expand_dims(annotation_pred, dim=3), conv_t3
 
@@ -133,7 +133,6 @@ def train(loss_val, var_list):
     optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
     grads = optimizer.compute_gradients(loss_val, var_list=var_list)
     if FLAGS.debug:
-        # print(len(var_list))
         for grad, var in grads:
             utils.add_gradient_summary(grad, var)
     return optimizer.apply_gradients(grads)
@@ -168,15 +167,16 @@ def main(argv=None):
             utils.add_to_regularization_and_summary(var)
     train_op = train(loss, trainable_var)
 
-    print("Setting up summary op...")
+    print(">> Setting up summary op...")
     summary_op = tf.summary.merge_all()
 
-    print("Setting up image reader...")
+    print(">> Setting up image reader...")
+    print(FLAGS.data_dir)
     train_records, valid_records = scene_parsing.read_dataset(FLAGS.data_dir)
-    print(len(train_records))
-    print(len(valid_records))
+    print("No. of train records:", len(train_records))
+    print("No. of test records", len(valid_records))
 
-    print("Setting up dataset reader")
+    print(">> Setting up dataset reader")
     image_options = {'resize': False, 'resize_size': IMAGE_SIZE}
     if FLAGS.mode == 'train':
         train_dataset_reader = dataset.Batch_manager(train_records, image_options)
@@ -184,7 +184,7 @@ def main(argv=None):
 
     sess = tf.Session()
 
-    print("Setting up Saver...")
+    print(">> Setting up Saver...")
     saver = tf.train.Saver()
     summary_writer = tf.summary.FileWriter(FLAGS.logs_dir, sess.graph)
 
@@ -192,7 +192,7 @@ def main(argv=None):
     ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
     if ckpt and ckpt.model_checkpoint_path:
         saver.restore(sess, ckpt.model_checkpoint_path)
-        print("Model restored...")
+        print(">> Model restored...")
 
     if FLAGS.mode == "train":
         for itr in xrange(MAX_ITERATION):

@@ -17,11 +17,11 @@ def read_dataset(image_dir):
     else:
         print("pickle file found")
     with open(pickle_filepath,"rb") as f:
-        result= pickle.load(f)
-        training_records=result['train']
-        validation_records= result['validate']
+        result = pickle.load(f)
+        training_records = result['train']
+        validation_records = result['validate']
         del result
-    return training_records,validation_records
+    return training_records, validation_records
 
 
 def create_image_list(image_dir):
