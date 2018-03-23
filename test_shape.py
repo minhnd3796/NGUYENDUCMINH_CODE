@@ -16,13 +16,13 @@ def conv2d(x, W):
 def max_pool_3x3(x):
     return tf.nn.max_pool(x, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-x = tf.placeholder(tf.float32, shape=[None, 224, 224, 3])
+x = tf.placeholder(tf.float32, shape=[None, 14, 14, 512])
 
 resnet101_net = utils.get_model_data('../pretrained_models/imagenet-resnet-101-dag.mat')
 weights = np.squeeze(resnet101_net['params'])
 kernel = weights[0][1]
 
-W_conv1 = weight_variable([7, 7, 3, 64], kernel)
+W_conv1 = weight_variable([4, 4, 256, 512], kernel)
 # b_conv1 = bias_variable([64])
 result = conv2d(x, W_conv1)
 shape = tf.shape(result)

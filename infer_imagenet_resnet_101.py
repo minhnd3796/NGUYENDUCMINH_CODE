@@ -196,10 +196,13 @@ def main(argv=None):
     predicted_class, image_net = inference(x, weights)
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
-    score, category = sess.run([tf.reduce_max(image_net['prob'][0][0][0]), predicted_class],
-                               feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)})
-    print('Category:', resnet101_net['meta'][0][0][1][0][0][1][0][category][0])
-    print('Score:', score)
+    # score, category = sess.run([tf.reduce_max(image_net['prob'][0][0][0]), predicted_class],
+    #                            feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)})
+    # print('Category:', resnet101_net['meta'][0][0][1][0][0][1][0][category][0])
+    # print('Score:', score)
+
+    shape = sess.run(image_net['res5c_relu'], feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)}).shape
+    print(shape)
 
 if __name__ == "__main__":
     tf.app.run()

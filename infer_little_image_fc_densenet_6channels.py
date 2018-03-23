@@ -8,7 +8,7 @@ from layers_fc_densenet import *
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "1", "batch size for training")
 tf.flags.DEFINE_string("logs_dir", "logs/", "path to logs directory")
-tf.flags.DEFINE_string("data_dir", "ISPRS_semantic_labeling_Vaihingen", "path to dataset")
+tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 MAX_ITERATION = int(1e6 + 1)
 NUM_OF_CLASSESS = 6
 IMAGE_SIZE = 224

@@ -3,15 +3,15 @@ import os
 import numpy as np
 import scipy.misc as misc
 
-base_dir_train = "ISPRS_semantic_labeling_Vaihingen/train_5channels"
-base_dir_tiny_train = "ISPRS_semantic_labeling_Vaihingen/tiny_train_5channels"
-base_dir_validate = "ISPRS_semantic_labeling_Vaihingen/validate_5channels"
-base_dir_annotations = "ISPRS_semantic_labeling_Vaihingen/annotations"
-base_dir_top = "ISPRS_semantic_labeling_Vaihingen/top"
-base_dir_ndsm = "ISPRS_semantic_labeling_Vaihingen/ndsm"
-base_dir_dsm = "ISPRS_semantic_labeling_Vaihingen/dsm"
-base_dir_tiny_train_gt = "ISPRS_semantic_labeling_Vaihingen/tiny_train_gt_5channels"
-base_dir_train_validate_gt = "ISPRS_semantic_labeling_Vaihingen/train_validate_gt_5channels"
+base_dir_train = "../ISPRS_semantic_labeling_Vaihingen/train_5channels"
+base_dir_tiny_train = "../ISPRS_semantic_labeling_Vaihingen/tiny_train_5channels"
+base_dir_validate = "../ISPRS_semantic_labeling_Vaihingen/validate_5channels"
+base_dir_annotations = "../ISPRS_semantic_labeling_Vaihingen/annotations"
+base_dir_top = "../ISPRS_semantic_labeling_Vaihingen/top"
+base_dir_ndsm = "../ISPRS_semantic_labeling_Vaihingen/ndsm"
+base_dir_dsm = "../ISPRS_semantic_labeling_Vaihingen/dsm"
+base_dir_tiny_train_gt = "../ISPRS_semantic_labeling_Vaihingen/tiny_train_gt_5channels"
+base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validate_gt_5channels"
 image_size = 224
 num_cropping_per_image = 3333
 #validate_image = ["top_mosaic_09cm_area7.png","top_mosaic_09cm_area17.png","top_mosaic_09cm_area23.png","top_mosaic_09cm_area37.png"]

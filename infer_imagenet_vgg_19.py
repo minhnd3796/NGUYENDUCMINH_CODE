@@ -67,15 +67,15 @@ def main(argv=None):
     resized_img = resize(img, (224, 224), preserve_range=True, mode='reflect')
     normalised_img = utils.process_image(resized_img, mean)
     
-    with tf.device('/cpu:0'):
-        x = _input()
-        predicted_class, image_net = inference(x, weights)
-        sess = tf.Session(config=tf.ConfigProto(log_device_placement=False))
-        sess.run(tf.global_variables_initializer())
-        score, category = sess.run([tf.reduce_max(image_net['prob'][0][0][0]), predicted_class],
-                                    feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)})
+    x = _input()
+    predicted_class, image_net = inference(x, weights)
+    sess = tf.Session(config=tf.ConfigProto(log_device_placement=False))
+    sess.run(tf.global_variables_initializer())
+    score, category = sess.run([tf.reduce_max(image_net['prob'][0][0][0]), predicted_class],
+                                feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)})
     print('Category:', vgg19_net['classes'][0][0][1][0][category][0])
     print('Score:', score)
+    print(sess.run(image_net['pool3'], feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)}).shape)
 
 if __name__ == "__main__":
     tf.app.run()

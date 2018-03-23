@@ -192,7 +192,7 @@ def main(argv=None):
         sess.run(train_op, feed_dict=feed_dict)
         if itr % 50 == 0:
             train_loss, train_acc, summary_loss, summary_acc = sess.run([loss, acc, loss_summary, acc_summary], feed_dict=feed_dict)
-            print("Step: %d, Train_loss:%g, Train_acc:%g" % (itr, train_loss, train_acc))
+            print("Step: %d, Train_loss: %g, Train_acc: %g" % (itr, train_loss, train_acc))
             train_writer.add_summary(summary_loss, itr)
             train_writer.add_summary(summary_acc, itr)
         if itr % 500 == 0:

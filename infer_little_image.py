@@ -4,13 +4,15 @@ import numpy as np
 import tensorflow as tf
 from scipy.misc import imread, imsave
 
+import fully_conv_resnet
+
 import tensor_utils as utils
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "1", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "logs/", "path to logs directory")
-tf.flags.DEFINE_string("data_dir", "ISPRS_semantic_labeling_Vaihingen", "path to dataset")
-tf.flags.DEFINE_string("model_dir", "ISPRS_semantic_labeling_Vaihingen/imagenet-vgg-verydeep-19.mat", "Path to vgg model mat")
+tf.flags.DEFINE_string("logs_dir", "../logs/", "path to logs directory")
+tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
+tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to vgg model mat")
 tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
 MAX_ITERATION = int(1e6 + 1)
 NUM_OF_CLASSESS = 6
@@ -217,7 +219,7 @@ def inference(image, keep_prob):
 
 
 def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=112):
-    input_image= imread(input_image_path)
+    input_image = imread(input_image_path)
     height = np.shape(input_image)[0]
     width = np.shape(input_image)[1]
     output_map = np.zeros((height, width, 6), dtype=np.float32)
@@ -227,14 +229,14 @@ def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=1
     sess= tf.Session()
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 3], name="input_image")
-    _, logits = inference(image, keep_probability)
+    _, logits = fully_conv_resnet.inference(image, keep_probability)
     saver = tf.train.Saver()
     sess.run(tf.global_variables_initializer())
     ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
     if ckpt and ckpt.model_checkpoint_path:
         saver.restore(sess, ckpt.model_checkpoint_path)
         print("Model restored...")
-    input_image= np.expand_dims(input_image,axis=0)
+    input_image= np.expand_dims(input_image, axis=0)
     for i in range(number_of_vertical_points):
         for j in range(number_of_horizontial_points):
             current_patch = input_image[:,i * stride_ver:i * stride_ver + patch_size,
@@ -242,8 +244,7 @@ def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=1
             logits_result = sess.run(logits, feed_dict={image: current_patch, keep_probability: 1.0})
             logits_result = tf.squeeze(logits_result)
             patch_result= sess.run(logits_result)
-            output_map[i * stride_ver:i * stride_ver + patch_size, j * stride_hor:j * stride_hor + patch_size,
-            :] += patch_result
+            output_map[i * stride_ver:i * stride_ver + patch_size, j * stride_hor:j * stride_hor + patch_size, :] += patch_result
             print('stage 1: i='+str(i)+"; j="+str(j))
     for i in range(number_of_vertical_points):
         current_patch= input_image[:,i*stride_ver:i*stride_ver+patch_size,width-patch_size:width,:]
@@ -284,7 +285,7 @@ def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=1
 
 if __name__ == "__main__":
     #tf.app.run()
-    imsave("top_mosaic_09cm_area38.tif",infer_little_img("ISPRS_semantic_labeling_Vaihingen/top/top_mosaic_09cm_area38.tif"))
+    imsave("top_mosaic_09cm_area38.tif",infer_little_img("../ISPRS_semantic_labeling_Vaihingen/top/top_mosaic_09cm_area38.tif"))
 
 # 2
 # 4

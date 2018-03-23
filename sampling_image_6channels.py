@@ -4,14 +4,14 @@ import numpy as np
 import scipy.misc as misc
 from libtiff import TIFF
 
-base_dir_train = "ISPRS_semantic_labeling_Vaihingen/train"
-base_dir_validate = "ISPRS_semantic_labeling_Vaihingen/validate"
-base_dir_annotations = "ISPRS_semantic_labeling_Vaihingen/annotations"
-base_dir_top = "ISPRS_semantic_labeling_Vaihingen/top"
-base_dir_ndsm = "ISPRS_semantic_labeling_Vaihingen/ndsm"
-base_dir_dsm = "ISPRS_semantic_labeling_Vaihingen/dsm"
-base_dir_ndvi= "ISPRS_semantic_labeling_Vaihingen/ndvi"
-base_dir_train_validate_gt = "ISPRS_semantic_labeling_Vaihingen/train_validate_gt"
+base_dir_train = "../ISPRS_semantic_labeling_Vaihingen/train"
+base_dir_validate = "../ISPRS_semantic_labeling_Vaihingen/validate"
+base_dir_annotations = "../ISPRS_semantic_labeling_Vaihingen/annotations"
+base_dir_top = "../ISPRS_semantic_labeling_Vaihingen/top"
+base_dir_ndsm = "../ISPRS_semantic_labeling_Vaihingen/ndsm"
+base_dir_dsm = "../ISPRS_semantic_labeling_Vaihingen/dsm"
+base_dir_ndvi= "../ISPRS_semantic_labeling_Vaihingen/ndvi"
+base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validate_gt"
 image_size = 224
 num_cropping_per_image = 3333
 validate_image=[]
