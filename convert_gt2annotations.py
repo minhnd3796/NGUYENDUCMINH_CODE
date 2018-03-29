@@ -1,11 +1,12 @@
 import os
 
 import numpy as np
-from scipy import 
-from PIL import Image
+from scipy import misc
+# from PIL import Image
 
 ground_truth_path = "../ISPRS_semantic_labeling_Vaihingen/gts_for_participants"
 annotaions_path = "../ISPRS_semantic_labeling_Vaihingen/annotations"
+high = 4
 
 for filename in os.listdir(ground_truth_path):
     image= misc.imread(os.path.join(ground_truth_path, filename))
@@ -28,10 +29,11 @@ for filename in os.listdir(ground_truth_path):
                 # Car (RGB: 255, 255, 0)
                 annotation_image[i, j] = 4
             else:
+                high = 5
                 # Clutter/background (RGB: 255, 0, 0)
                 annotation_image[i, j] = 5
     annotation_filename = os.path.splitext(filename)[0]
     print(">> Processing", annotation_image)
-    # misc.toimage(annotation_image, high = high, low=0).save(os.path.join(annotaions_path, annotation_filename + ".png"))
-    Image.fromarray(annotation_image).save(os.path.join(annotaions_path, annotation_filename + ".png"))
+    misc.toimage(annotation_image, high = high, low=0).save(os.path.join(annotaions_path, annotation_filename + ".png"))
+    # Image.fromarray(annotation_image).save(os.path.join(annotaions_path, annotation_filename + ".png"))
 print("Done!")

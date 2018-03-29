@@ -1,3 +1,5 @@
+import os
+
 from sys import argv
 import tensor_utils as utils
 import numpy as np
@@ -158,7 +160,7 @@ def resnet101_net(image, weights):
     current, net, start_param_index = construct_res_xa_block(4, current, net, weights, start_param_index, True)
     for i in range(1, 23):
         current, net, start_param_index = construct_res_xxx_block(4, 'b' + str(i), current, net, weights, start_param_index)
-    
+
     current, net, start_param_index = construct_res_xa_block(5, current, net, weights, start_param_index, True)
     current, net, start_param_index = construct_res_xxx_block(5, 'b', current, net, weights, start_param_index)
     current, net, start_param_index = construct_res_xxx_block(5, 'c', current, net, weights, start_param_index)
@@ -184,6 +186,7 @@ def inference(x, weights):
     return prediction, image_net
 
 def main(argv=None):
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     resnet101_net = utils.get_model_data('../pretrained_models/imagenet-resnet-101-dag.mat')
     weights = np.squeeze(resnet101_net['params'])
 
@@ -191,18 +194,18 @@ def main(argv=None):
     mean = resnet101_net['meta'][0][0][2][0][0][2]
     resized_img = resize(img, (224, 224), preserve_range=True, mode='reflect')
     normalised_img = utils.process_image(resized_img, mean)
-    
+
     x = _input()
     predicted_class, image_net = inference(x, weights)
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
-    # score, category = sess.run([tf.reduce_max(image_net['prob'][0][0][0]), predicted_class],
-    #                            feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)})
-    # print('Category:', resnet101_net['meta'][0][0][1][0][0][1][0][category][0])
-    # print('Score:', score)
+    score, category = sess.run([tf.reduce_max(image_net['prob'][0][0][0]), predicted_class],
+                               feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)})
+    print('Category:', resnet101_net['meta'][0][0][1][0][0][1][0][category][0])
+    print('Score:', score)
 
-    shape = sess.run(image_net['res5c_relu'], feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)}).shape
-    print(shape)
+    # shape = sess.run(image_net['res5c_relu'], feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)}).shape
+    # print(shape)
 
 if __name__ == "__main__":
     tf.app.run()

@@ -10,9 +10,11 @@ import Batch_manager as dataset
 import data_reader as scene_parsing
 import tensor_utils as utils
 
+import os
+
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer("batch_size", "5", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "../logs/", "path to logs directory")
+tf.flags.DEFINE_integer("batch_size", "6", "batch size for training")
+tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-5", "Learning rate for Adam Optimizer")
 tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat",
@@ -139,6 +141,7 @@ def train(loss_val, var_list):
 
 
 def main(argv=None):
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 3], name="input_image")
     annotation = tf.placeholder(tf.int32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 1], name="annotation")

@@ -1,3 +1,4 @@
+import os
 from sys import argv
 import tensor_utils as utils
 import numpy as np
@@ -58,6 +59,7 @@ def inference(x, weights):
 
 def main(argv=None):
     img = imread(argv[1])
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     # tmp = loadmat('im_.mat')
 
     vgg19_net = utils.get_model_data('../pretrained_models/imagenet-vgg-verydeep-19.mat')
@@ -66,7 +68,7 @@ def main(argv=None):
 
     resized_img = resize(img, (224, 224), preserve_range=True, mode='reflect')
     normalised_img = utils.process_image(resized_img, mean)
-    
+
     x = _input()
     predicted_class, image_net = inference(x, weights)
     sess = tf.Session(config=tf.ConfigProto(log_device_placement=False))
