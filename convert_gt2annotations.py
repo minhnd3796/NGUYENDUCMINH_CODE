@@ -29,7 +29,6 @@ for filename in os.listdir(ground_truth_path):
                 # Car (RGB: 255, 255, 0)
                 annotation_image[i, j] = 4
             else:
-                high = 5
                 # Clutter/background (RGB: 255, 0, 0)
                 high = 5
                 annotation_image[i, j] = 5
