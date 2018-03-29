@@ -6,6 +6,7 @@ from PIL import Image
 
 ground_truth_path = "../ISPRS_semantic_labeling_Vaihingen/gts_for_participants"
 annotaions_path = "../ISPRS_semantic_labeling_Vaihingen/annotations"
+high = 4
 
 for filename in os.listdir(ground_truth_path):
     image= misc.imread(os.path.join(ground_truth_path, filename))
@@ -29,6 +30,7 @@ for filename in os.listdir(ground_truth_path):
                 annotation_image[i, j] = 4
             else:
                 # Clutter/background (RGB: 255, 0, 0)
+                high = 5
                 annotation_image[i, j] = 5
     annotation_filename = os.path.splitext(filename)[0]
     print(">> Processing", annotation_image)
