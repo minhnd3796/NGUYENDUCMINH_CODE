@@ -31,6 +31,7 @@ for filename in os.listdir(ground_truth_path):
             else:
                 high = 5
                 # Clutter/background (RGB: 255, 0, 0)
+                high = 5
                 annotation_image[i, j] = 5
     annotation_filename = os.path.splitext(filename)[0]
     print(">> Processing", annotation_image)
