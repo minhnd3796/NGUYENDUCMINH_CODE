@@ -72,5 +72,4 @@ def create_tiny_training_dataset():
     return None
 
 create_training_dataset()
-create_tiny_training_dataset()
 create_validation_dataset()
