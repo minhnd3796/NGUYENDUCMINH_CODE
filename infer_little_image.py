@@ -12,7 +12,7 @@ FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "1", "batch size for training")
 tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
-tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to model mat file")
+tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat", "Path to model mat file")
 tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
 MAX_ITERATION = int(1e6 + 1)
 NUM_OF_CLASSESS = 6
@@ -229,7 +229,8 @@ def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=1
     sess= tf.Session()
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 3], name="input_image")
-    _, logits = fully_conv_resnet.inference(image, keep_probability)
+    # _, logits = fully_conv_resnet.inference(image, keep_probability)
+    _, logits = inference(image, keep_probability)
     saver = tf.train.Saver()
     sess.run(tf.global_variables_initializer())
     ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
