@@ -10,7 +10,7 @@ import tensor_utils as utils
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "1", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "../logs/", "path to logs directory")
+tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to vgg model mat")
 tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
