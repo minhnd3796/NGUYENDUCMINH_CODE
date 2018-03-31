@@ -34,7 +34,7 @@ def vgg_net(weights, image):
             kernels, bias = weights[i][0][0][0][0]
             # matconvnet: weights are [width, height, in_channels, out_channels]
             # tensorflow: weights are [height, width, in_channels, out_channels]
-            # kernels = utils.get_variable(np.transpose(kernels, (1, 0, 2, 3)), name=name + "_w")
+            # kernels = utils.get_variable(np.transpose(kernels, (0, 1, 2, 3)), name=name + "_w")
             kernels = utils.get_variable(kernels, name=name + "_w")
             bias = utils.get_variable(bias.reshape(-1), name=name + "_b")
             if kind == 'conv':

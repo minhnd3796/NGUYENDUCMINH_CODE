@@ -8,7 +8,7 @@ from layers_fc_densenet import *
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_float("learning_rate", "5e-4", "Learning rate for Adam Optimizer")
 tf.flags.DEFINE_integer("batch_size", "5", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "logs/", "path to logs directory")
+tf.flags.DEFINE_string("logs_dir", "../logs-dense/", "path to logs directory")
 MAX_ITERATION = int(1e7 + 1)
 NUM_OF_CLASSESS = 6
 IMAGE_SIZE = 224

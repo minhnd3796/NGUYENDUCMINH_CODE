@@ -5,7 +5,7 @@ from layers_fc_densenet import *
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_float("learning_rate", "5e-4", "Learning rate for Adam Optimizer")
 tf.flags.DEFINE_integer("batch_size", "3", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "logs/", "path to logs directory")
+tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
 MAX_ITERATION = int(1e7 + 1)
 NUM_OF_CLASSESS = 6
 IMAGE_SIZE = 224
@@ -17,7 +17,7 @@ def inference(image, keep_prob):
     growth_rate = 12
     n_layers_per_block = [5]*(2*n_pool +1)
     n_classes = 6
-    mean_pixel = np.array([120.895239985, 81.9300816234, 81.2898876188, 66.8837693324, 30.6986130799, 283.307])
+    mean_pixel = np.array([120.895239985, 81.9300816234, 81.2898876188, 66.8837693324, 30.6986130799, 284.97018])
     processed_image = utils.process_image(image, mean_pixel)
     print(np.shape(processed_image))
     W_first = utils.weight_variable([3,3,processed_image.get_shape().as_list()[3],n_filters_first_conv], name='W_first')

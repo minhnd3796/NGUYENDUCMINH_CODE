@@ -9,7 +9,7 @@ import tensor_utils_5_channels as utils
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "1", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "logs/", "path to logs directory")
+tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "ISPRS_semantic_labeling_Potsdam", "path to dataset")
 tf.flags.DEFINE_string("model_dir", "ISPRS_semantic_labeling_Potsdam/imagenet-vgg-verydeep-19.mat", "Path to vgg model mat")
 tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
@@ -45,9 +45,9 @@ def vgg_net(weights, image):
                 append_channels= np.random.normal(loc=0,scale=0.02,size=(3,3,3,64))
                 print(append_channels)
                 kernels = np.concatenate((kernels, append_channels), axis=2)
-                kernels = utils.get_variable(np.transpose(kernels, (1, 0, 2, 3)), name=name + "_w")
+                kernels = utils.get_variable(np.transpose(kernels, (0, 1, 2, 3)), name=name + "_w")
             else:
-                kernels = utils.get_variable(np.transpose(kernels, (1, 0, 2, 3)), name=name + "_w")
+                kernels = utils.get_variable(np.transpose(kernels, (0, 1, 2, 3)), name=name + "_w")
             bias = utils.get_variable(bias.reshape(-1), name=name + "_b")
             current = utils.conv2d_basic(current, kernels, bias)
         elif kind == 'relu':
@@ -124,7 +124,7 @@ def inference(image, keep_prob):
         b_t3 = utils.bias_variable([NUM_OF_CLASSESS], name="b_t3")
         conv_t3 = utils.conv2d_transpose_strided(fuse_2, W_t3, b_t3, output_shape=deconv_shape3, stride=8)
 
-        annotation_pred = tf.argmax(conv_t3, dimension=3, name="prediction")
+        annotation_pred = tf.argmax(conv_t3, axis=3, name="prediction")
 
     return tf.expand_dims(annotation_pred, dim=3), conv_t3
 

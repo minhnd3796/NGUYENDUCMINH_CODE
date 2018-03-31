@@ -54,8 +54,8 @@ def create_training_dataset():
             ndsm_image_cropped= np.expand_dims(ndsm_image_cropped,axis=2)
             dsm_image_cropped= dsm_image[x:x + image_size, y:y + image_size]
             dsm_image_cropped= np.expand_dims(dsm_image_cropped,axis=2)
-            array_for_save= np.concatenate((top_image_cropped,ndsm_image_cropped,dsm_image_cropped),axis=2).astype(dtype=np.float16)
-            np.save(os.path.join(base_dir_train, os.path.splitext(filename)[0] + "_" + str(i)+".npy"),array_for_save)
+            array_to_save= np.concatenate((top_image_cropped,ndsm_image_cropped,dsm_image_cropped),axis=2).astype(dtype=np.float16)
+            np.save(os.path.join(base_dir_train, os.path.splitext(filename)[0] + "_" + str(i)+".npy"),array_to_save)
             #misc.imsave(os.path.join(base_dir_train, os.path.splitext(filename)[0] + "_" + str(i) + ".tif"), top_image_cropped)
             annotation_image_cropped= annotation_image[x:x + image_size, y:y + image_size]
             misc.imsave(os.path.join(base_dir_train_validate_gt, os.path.splitext(filename)[0] + "_" + str(i) + ".png"), annotation_image_cropped)

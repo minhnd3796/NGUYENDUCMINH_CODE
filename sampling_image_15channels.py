@@ -86,10 +86,10 @@ def create_training_dataset():
             sat_image_cropped = np.expand_dims(sat_image_cropped, axis=2)
             texton_image_cropped = texton_image[x:x + image_size, y:y + image_size]
             texton_image_cropped = np.expand_dims(texton_image_cropped, axis=2)
-            array_for_save= np.concatenate((top_image_cropped,ndsm_image_cropped,dsm_image_cropped, A_image_cropped,
+            array_to_save= np.concatenate((top_image_cropped,ndsm_image_cropped,dsm_image_cropped, A_image_cropped,
                                             azi_image_cropped, B_image_cropped, ele_image_cropped, entpy_image_cropped, entpy2_image_cropped,
                                             L_image_cropped, ndvi_image_cropped, sat_image_cropped, texton_image_cropped),axis=2).astype(dtype=np.float16)
-            np.save(os.path.join(base_dir_train, os.path.splitext(filename)[0] + "_" + str(i)+".npy"),array_for_save)
+            np.save(os.path.join(base_dir_train, os.path.splitext(filename)[0] + "_" + str(i)+".npy"),array_to_save)
             annotation_image_cropped= annotation_image[x:x + image_size, y:y + image_size]
             misc.imsave(os.path.join(base_dir_train_validate_gt, os.path.splitext(filename)[0] + "_" + str(i) + ".png"), annotation_image_cropped)
     return None
@@ -114,8 +114,8 @@ def create_validation_dataset():
             ndsm_image_cropped = np.expand_dims(ndsm_image_cropped, axis=2)
             dsm_image_cropped = dsm_image[x:x + image_size, y:y + image_size]
             dsm_image_cropped = np.expand_dims(dsm_image_cropped, axis=2)
-            array_for_save = np.concatenate((top_image_cropped, ndsm_image_cropped, dsm_image_cropped), axis=2).astype(dtype=np.float16)
-            np.save(os.path.join(base_dir_validate, os.path.splitext(filename)[0] + "_" + str(i) + ".npy"), array_for_save)
+            array_to_save = np.concatenate((top_image_cropped, ndsm_image_cropped, dsm_image_cropped), axis=2).astype(dtype=np.float16)
+            np.save(os.path.join(base_dir_validate, os.path.splitext(filename)[0] + "_" + str(i) + ".npy"), array_to_save)
             # misc.imsave(os.path.join(base_dir_train, os.path.splitext(filename)[0] + "_" + str(i) + ".tif"), top_image_cropped)
             annotation_image_cropped = annotation_image[x:x + image_size, y:y + image_size]
             misc.imsave(os.path.join(base_dir_train_validate_gt, os.path.splitext(filename)[0] + "_" + str(i) + ".png"),
