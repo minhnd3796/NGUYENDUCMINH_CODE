@@ -4,13 +4,15 @@ import numpy as np
 import tensorflow as tf
 from scipy.misc import imread, imsave
 
+import fully_conv_resnet
+
 import tensor_utils_5_channels as utils
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "1", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "logs/", "path to logs directory")
+tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
-tf.flags.DEFINE_string("model_dir", "../ISPRS_semantic_labeling_Vaihingen/imagenet-vgg-verydeep-19.mat", "Path to vgg model mat")
+tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to vgg model mat")
 tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
 MAX_ITERATION = int(1e6 + 1)
 NUM_OF_CLASSESS = 6
@@ -44,9 +46,9 @@ def vgg_net(weights, image):
                 append_channels= np.random.normal(loc=0,scale=0.02,size=(3,3,2,64))
                 print(append_channels)
                 kernels = np.concatenate((kernels, append_channels), axis=2)
-                kernels = utils.get_variable(np.transpose(kernels, (1, 0, 2, 3)), name=name + "_w")
+                kernels = utils.get_variable(np.transpose(kernels, (0, 1, 2, 3)), name=name + "_w")
             else:
-                kernels = utils.get_variable(np.transpose(kernels, (1, 0, 2, 3)), name=name + "_w")
+                kernels = utils.get_variable(np.transpose(kernels, (0, 1, 2, 3)), name=name + "_w")
             bias = utils.get_variable(bias.reshape(-1), name=name + "_b")
             current = utils.conv2d_basic(current, kernels, bias)
         elif kind == 'relu':
@@ -72,7 +74,7 @@ def inference(image, keep_prob):
 
     mean = model_data['normalization'][0][0][0]
     mean_pixel = np.mean(mean, axis=(0, 1))
-    mean_pixel = np.append(mean_pixel, [30.6986130799, 283.307])
+    mean_pixel = np.append(mean_pixel, [30.6986130799, 284.97018])
     weights = np.squeeze(model_data['layers'])
 
     processed_image = utils.process_image(image, mean_pixel)
@@ -123,7 +125,7 @@ def inference(image, keep_prob):
         b_t3 = utils.bias_variable([NUM_OF_CLASSESS], name="b_t3")
         conv_t3 = utils.conv2d_transpose_strided(fuse_2, W_t3, b_t3, output_shape=deconv_shape3, stride=8)
 
-        annotation_pred = tf.argmax(conv_t3, dimension=3, name="prediction")
+        annotation_pred = tf.argmax(conv_t3, axis=3, name="prediction")
 
     return tf.expand_dims(annotation_pred, dim=3), conv_t3
 
@@ -145,7 +147,8 @@ def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=1
     sess= tf.Session()
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 5], name="input_image")
-    _, logits = inference(image, keep_probability)
+    # _, logits = inference(image, keep_probability)
+    _, logits = fully_conv_resnet.inference(image, keep_probability)
     saver = tf.train.Saver()
     sess.run(tf.global_variables_initializer())
     ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
@@ -202,8 +205,8 @@ def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=1
 
 if __name__ == "__main__":
     #tf.app.run()
-    imsave("top_mosaic_09cm_area38.tif",
-           infer_little_img("../ISPRS_semantic_labeling_Vaihingen/top/top_mosaic_09cm_area38.tif"))
+    imsave("top_mosaic_09cm_area37.tif",
+           infer_little_img("../ISPRS_semantic_labeling_Vaihingen/top/top_mosaic_09cm_area37.tif"))
 
 
 # 2

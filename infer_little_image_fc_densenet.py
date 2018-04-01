@@ -7,7 +7,7 @@ from layers_fc_densenet import *
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "1", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "logs/", "path to logs directory")
+tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 MAX_ITERATION = int(1e6 + 1)
 NUM_OF_CLASSESS = 6
@@ -19,7 +19,7 @@ def inference(image, keep_prob):
     growth_rate = 12
     n_layers_per_block = [5]*(2*n_pool+1)
     n_classes = 6
-    mean_pixel = np.array([120.895239985, 81.9300816234, 81.2898876188, 30.6986130799, 283.307, 106.314329243, 124.171918054, 109.260369903, 182.615729022,
+    mean_pixel = np.array([120.895239985, 81.9300816234, 81.2898876188, 30.6986130799, 284.97018, 106.314329243, 124.171918054, 109.260369903, 182.615729022,
                             75.1762766769, 84.3529895303, 100.699252985, 66.8837693324, 98.6030061849, 133.955897217])
     processed_image = utils.process_image(image, mean_pixel)
     print(np.shape(processed_image))

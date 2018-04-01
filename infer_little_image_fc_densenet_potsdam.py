@@ -8,7 +8,7 @@ from layers_fc_densenet import *
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "1", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "logs/", "path to logs directory")
+tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "ISPRS_semantic_labeling_Potsdam", "path to dataset")
 tf.flags.DEFINE_string("model_dir", "ISPRS_semantic_labeling_Potsdam/imagenet-vgg-verydeep-19.mat", "Path to vgg model mat")
 tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")

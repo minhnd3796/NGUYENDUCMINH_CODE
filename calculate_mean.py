@@ -1,11 +1,12 @@
 import os
 
+import cv2
 import numpy as np
 from scipy.misc import imread
 
-BASE_DIRECTORY = 'ISPRS_semantic_labeling_Vaihingen'
+BASE_DIRECTORY = '../ISPRS_semantic_labeling_Vaihingen'
 
-mean =[]
+mean = []
 for filename in os.listdir(BASE_DIRECTORY+'/top'):
     image = imread(BASE_DIRECTORY+'/top/'+filename)
     image = image[:,:,0]
@@ -32,20 +33,27 @@ print('G:')
 print(np.mean(np.array(mean)))
 print()
 
-
 mean =[]
-for filename in os.listdir(BASE_DIRECTORY+'/A'):
-    image = imread(BASE_DIRECTORY+'/A/'+filename)
+for filename in os.listdir(BASE_DIRECTORY+'/ndsm'):
+    image = imread(BASE_DIRECTORY+'/ndsm/'+filename)
     mean.append(np.mean(image))
-print('A:')
+print('nDSM:')
 print(np.mean(np.array(mean)))
 print()
 
 mean =[]
 for filename in os.listdir(BASE_DIRECTORY+'/dsm'):
-    image = imread(BASE_DIRECTORY+'/dsm/'+filename)
+    image = cv2.imread(BASE_DIRECTORY+'/dsm/'+filename, -1)
     mean.append(np.mean(image))
 print('DSM:')
+print(np.mean(np.array(mean)))
+print()
+
+""" mean =[]
+for filename in os.listdir(BASE_DIRECTORY+'/A'):
+    image = imread(BASE_DIRECTORY+'/A/'+filename)
+    mean.append(np.mean(image))
+print('A:')
 print(np.mean(np.array(mean)))
 print()
 
@@ -90,22 +98,6 @@ print(np.mean(np.array(mean)))
 print()
 
 mean =[]
-for filename in os.listdir(BASE_DIRECTORY+'/entpy2'):
-    image = imread(BASE_DIRECTORY+'/entpy2/'+filename)
-    mean.append(np.mean(image))
-print('entpy2:')
-print(np.mean(np.array(mean)))
-print()
-
-mean =[]
-for filename in os.listdir(BASE_DIRECTORY+'/ndsm'):
-    image = imread(BASE_DIRECTORY+'/ndsm/'+filename)
-    mean.append(np.mean(image))
-print('ndsm:')
-print(np.mean(np.array(mean)))
-print()
-
-mean =[]
 for filename in os.listdir(BASE_DIRECTORY+'/ndvi'):
     image = imread(BASE_DIRECTORY+'/ndvi/'+filename)
     mean.append(np.mean(image))
@@ -128,11 +120,21 @@ for filename in os.listdir(BASE_DIRECTORY+'/texton'):
 print('texton:')
 print(np.mean(np.array(mean)))
 
+mean =[]
+for filename in os.listdir(BASE_DIRECTORY+'/entpy2'):
+    image = imread(BASE_DIRECTORY+'/entpy2/'+filename)
+    mean.append(np.mean(image))
+print('entpy2:')
+print(np.mean(np.array(mean)))
+print() """
+
+
+
 # A:
 # 106.314329243
 #
 # DSM:
-# 283.307
+# 284.97018
 #
 # B:
 # 109.260369903

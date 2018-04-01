@@ -42,6 +42,13 @@ def inference(image, keep_prob):
     resnet101_model = utils.get_model_data(FLAGS.model_dir)
     weights = np.squeeze(resnet101_model['params'])
     mean_pixel = resnet101_model['meta'][0][0][2][0][0][2]
+    mean_pixel_init = resnet101_model['meta'][0][0][2][0][0][2]
+    mean_pixel = np.zeros((IMAGE_SIZE, IMAGE_SIZE, 5))
+    mean_pixel[:, :, 0] = mean_pixel_init[:, :, 0]
+    mean_pixel[:, :, 1] = mean_pixel_init[:, :, 1]
+    mean_pixel[:, :, 2] = mean_pixel_init[:, :, 2]
+    mean_pixel[:, :, 3] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 30.6986130799
+    mean_pixel[:, :, 4] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 284.97018
 
     normalised_img = utils.process_image(image, mean_pixel)
 
