@@ -134,6 +134,7 @@ def train(loss_val, var_list):
 
 
 def main(argv=None):
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 5], name="input_image")
     annotation = tf.placeholder(tf.int32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 1], name="annotation")
@@ -166,7 +167,7 @@ def main(argv=None):
     # summary_op = tf.summary.merge_all()
 
     print("Setting up image reader...")
-    train_records, valid_records = reader.read_dataset(FLAGS.data_dir)
+    train_records, valid_records = reader.read_dataset_resnet101(FLAGS.data_dir)
     print(len(train_records))
     print(len(valid_records))
 
