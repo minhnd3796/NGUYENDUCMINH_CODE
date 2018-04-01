@@ -15,7 +15,7 @@ base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validat
 image_size = 224
 # num_cropping_per_image = 3333
 validate_image = ["top_mosaic_09cm_area17.png"]
-STRIDE = 14
+STRIDE = 56
 
 def create_training_dataset():
     for filename in listdir(base_dir_annotations):
