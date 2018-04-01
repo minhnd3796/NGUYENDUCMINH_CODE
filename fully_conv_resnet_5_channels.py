@@ -1,5 +1,5 @@
 from __future__ import print_function
-
+import os
 import numpy as np
 import tensorflow as tf
 from six.moves import xrange
@@ -175,7 +175,7 @@ def main(argv=None):
     image_options = {'resize': False, 'resize_size': IMAGE_SIZE}
     if FLAGS.mode == 'train':
         train_dataset_reader = dataset.Batch_manager(train_records, image_options)
-    #validation_dataset_reader = dataset.Batch_manager(valid_records, image_options)
+    validation_dataset_reader = dataset.Batch_manager(valid_records, image_options)
 
     sess = tf.Session()
 
