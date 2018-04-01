@@ -202,14 +202,14 @@ def main(argv=None):
             train_writer.add_summary(summary_loss, itr)
             train_writer.add_summary(summary_acc, itr)
         if itr % 500 == 0:
-            """ valid_images, valid_annotations = validation_dataset_reader.next_batch(FLAGS.batch_size)
+            valid_images, valid_annotations = validation_dataset_reader.next_batch(FLAGS.batch_size)
             valid_loss, valid_acc, summary_loss, summary_acc = sess.run([loss, acc, loss_summary, acc_summary],
                                              feed_dict={image: valid_images, annotation: valid_annotations,
                                                         keep_probability: 1.0})
             validation_writer.add_summary(summary_loss, itr)
             validation_writer.add_summary(summary_acc, itr)
             print("%s ---> Validation_loss: %g , Validation Accuracy: %g" % (
-                datetime.datetime.now(), valid_loss, valid_acc)) """
+                datetime.datetime.now(), valid_loss, valid_acc))
             saver.save(sess, FLAGS.logs_dir + "model.ckpt", itr)
 
 
