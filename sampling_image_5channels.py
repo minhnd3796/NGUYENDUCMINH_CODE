@@ -5,7 +5,7 @@ from os import listdir
 import numpy as np
 from scipy.misc import imread, imsave
 
-base_dir_train = "../ISPRS_semantic_labeling_Vaihingen/train_5channels_vgg19"
+base_dir_train = "../ISPRS_semantic_labeling_Vaihingen/train_5channels"
 # base_dir_train = "../ISPRS_semantic_labeling_Vaihingen/train_5channels_resnet101"
 base_dir_tiny_train = "../ISPRS_semantic_labeling_Vaihingen/tiny_train_5channels"
 base_dir_validate = "../ISPRS_semantic_labeling_Vaihingen/validate_5channels_resnet101"
@@ -14,7 +14,7 @@ base_dir_top = "../ISPRS_semantic_labeling_Vaihingen/top"
 base_dir_ndsm = "../ISPRS_semantic_labeling_Vaihingen/ndsm"
 base_dir_dsm = "../ISPRS_semantic_labeling_Vaihingen/dsm"
 base_dir_tiny_train_gt = "../ISPRS_semantic_labeling_Vaihingen/tiny_train_gt_5channels"
-base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validate_gt_5channels_vgg19"
+base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validate_gt_5channels"
 # base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validate_gt_5channels_resnet101"
 image_size = 224
 num_cropping_per_image = 3333

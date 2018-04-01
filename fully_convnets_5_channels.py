@@ -1,4 +1,5 @@
 from __future__ import print_function
+import os
 
 import numpy as np
 import tensorflow as tf
@@ -149,6 +150,7 @@ def train(loss_val, var_list):
 
 
 def main(argv=None):
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 5], name="input_image")
     annotation = tf.placeholder(tf.int32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 1], name="annotation")
