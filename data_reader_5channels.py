@@ -55,7 +55,7 @@ def read_dataset_resnet101(image_dir):
     pickle_filename = "Vaihingen-resnet101.pickle"
     pickle_filepath = os.path.join(image_dir, pickle_filename)
     if not os.path.exists(pickle_filepath):
-        result = create_image_list(image_dir)
+        result = create_image_list_resnet101(image_dir)
         print("pickling...")
         with open(pickle_filepath, "wb") as f:
             pickle.dump(result,f,pickle.HIGHEST_PROTOCOL)
