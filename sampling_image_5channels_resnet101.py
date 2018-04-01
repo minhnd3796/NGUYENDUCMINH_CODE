@@ -15,7 +15,7 @@ base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validat
 image_size = 224
 # num_cropping_per_image = 3333
 validate_image = ["top_mosaic_09cm_area17.png"]
-STRIDE = 56
+STRIDE = 14
 
 def create_training_dataset():
     for filename in listdir(base_dir_annotations):
@@ -53,6 +53,7 @@ def create_training_dataset():
         i = 0
         while (x + image_size <= height):
             while (y + image_size <= width):
+                print((x, y))
                 top_image_cropped = top_image[x:x + image_size, y:y + image_size, :]
                 ndsm_image_cropped = ndsm_image[x:x + image_size, y:y + image_size]
                 ndsm_image_cropped = np.expand_dims(ndsm_image_cropped, axis = 2)
@@ -99,6 +100,7 @@ def create_validation_dataset():
         i = 0
         while (x + image_size <= height):
             while (y + image_size <= width):
+                print((x, y))
                 top_image_cropped = top_image[x:x + image_size, y:y + image_size, :]
                 ndsm_image_cropped = ndsm_image[x:x + image_size, y:y + image_size]
                 ndsm_image_cropped = np.expand_dims(ndsm_image_cropped, axis = 2)
