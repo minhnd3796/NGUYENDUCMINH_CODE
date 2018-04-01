@@ -13,9 +13,9 @@ base_dir_ndsm = "../ISPRS_semantic_labeling_Vaihingen/ndsm"
 base_dir_dsm = "../ISPRS_semantic_labeling_Vaihingen/dsm"
 base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validate_gt_5channels_resnet101"
 image_size = 224
-# num_cropping_per_image = 3333
+num_cropping_per_image = 10000
 validate_image = ["top_mosaic_09cm_area17.png"]
-STRIDE = 56
+# STRIDE = 56
 
 def create_training_dataset():
     for filename in listdir(base_dir_annotations):
@@ -34,39 +34,39 @@ def create_training_dataset():
         print()
         width = np.shape(top_image)[1]
         height = np.shape(top_image)[0]
-#         for i in range(num_cropping_per_image):
-#             x = int(np.random.uniform(0, height - image_size + 1))
-#             y = int(np.random.uniform(0, width - image_size + 1))
-#             print((x, y))
-#             top_image_cropped = top_image[x:x + image_size, y:y + image_size, :]
-#             ndsm_image_cropped = ndsm_image[x:x + image_size, y:y + image_size]
-#             ndsm_image_cropped = np.expand_dims(ndsm_image_cropped, axis = 2)
-#             dsm_image_cropped = dsm_image[x:x + image_size, y:y + image_size]
-#             dsm_image_cropped = np.expand_dims(dsm_image_cropped, axis = 2)
-#             array_to_save = np.concatenate((top_image_cropped,ndsm_image_cropped,dsm_image_cropped), axis=2).astype(dtype=np.float16)
-#             np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(i) + ".npy"), array_to_save)
-#             #imsave(join(base_dir_train, splitext(filename)[0] + "_" + str(i) + ".tif"), top_image_cropped)
-#             annotation_image_cropped = annotation_image[x:x + image_size, y:y + image_size]
-#             imsave(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(i) + ".png"), annotation_image_cropped)
-        x = 0
-        y = 0
-        i = 0
-        while (x + image_size <= height):
-            while (y + image_size <= width):
-                print((x, y))
-                top_image_cropped = top_image[x:x + image_size, y:y + image_size, :]
-                ndsm_image_cropped = ndsm_image[x:x + image_size, y:y + image_size]
-                ndsm_image_cropped = np.expand_dims(ndsm_image_cropped, axis = 2)
-                dsm_image_cropped = dsm_image[x:x + image_size, y:y + image_size]
-                dsm_image_cropped = np.expand_dims(dsm_image_cropped, axis = 2)
-                array_to_save = np.concatenate((top_image_cropped, ndsm_image_cropped, dsm_image_cropped), axis=2).astype(dtype=np.float16)
-                np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(i) + ".npy"), array_to_save)
-                annotation_image_cropped = annotation_image[x:x + image_size, y:y + image_size]
-                imsave(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(i) + ".png"), annotation_image_cropped)
-                i += 1
-                y += STRIDE
-            x += STRIDE
-            y = 0
+        for i in range(num_cropping_per_image):
+            x = int(np.random.uniform(0, height - image_size + 1))
+            y = int(np.random.uniform(0, width - image_size + 1))
+            print((x, y))
+            top_image_cropped = top_image[x:x + image_size, y:y + image_size, :]
+            ndsm_image_cropped = ndsm_image[x:x + image_size, y:y + image_size]
+            ndsm_image_cropped = np.expand_dims(ndsm_image_cropped, axis = 2)
+            dsm_image_cropped = dsm_image[x:x + image_size, y:y + image_size]
+            dsm_image_cropped = np.expand_dims(dsm_image_cropped, axis = 2)
+            array_to_save = np.concatenate((top_image_cropped,ndsm_image_cropped,dsm_image_cropped), axis=2).astype(dtype=np.float16)
+            np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(i) + ".npy"), array_to_save)
+            #imsave(join(base_dir_train, splitext(filename)[0] + "_" + str(i) + ".tif"), top_image_cropped)
+            annotation_image_cropped = annotation_image[x:x + image_size, y:y + image_size]
+            imsave(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(i) + ".png"), annotation_image_cropped)
+#         x = 0
+#         y = 0
+#         i = 0
+#         while (x + image_size <= height):
+#             while (y + image_size <= width):
+#                 print((x, y))
+#                 top_image_cropped = top_image[x:x + image_size, y:y + image_size, :]
+#                 ndsm_image_cropped = ndsm_image[x:x + image_size, y:y + image_size]
+#                 ndsm_image_cropped = np.expand_dims(ndsm_image_cropped, axis = 2)
+#                 dsm_image_cropped = dsm_image[x:x + image_size, y:y + image_size]
+#                 dsm_image_cropped = np.expand_dims(dsm_image_cropped, axis = 2)
+#                 array_to_save = np.concatenate((top_image_cropped, ndsm_image_cropped, dsm_image_cropped), axis=2).astype(dtype=np.float16)
+#                 np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(i) + ".npy"), array_to_save)
+#                 annotation_image_cropped = annotation_image[x:x + image_size, y:y + image_size]
+#                 imsave(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(i) + ".png"), annotation_image_cropped)
+#                 i += 1
+#                 y += STRIDE
+#             x += STRIDE
+#             y = 0
     return None
 
 
@@ -80,40 +80,40 @@ def create_validation_dataset():
         ndsm_image = imread(base_dir_ndsm + "/" + ndsm_image_name)
         width = np.shape(top_image)[1]
         height = np.shape(top_image)[0]
-#         for i in range(num_cropping_per_image):
-#             x = int(np.random.uniform(0, height - image_size + 1))
-#             y = int(np.random.uniform(0, width - image_size + 1))
-#             print((x, y))
-#             top_image_cropped = top_image[x:x + image_size, y:y + image_size, :]
-#             ndsm_image_cropped = ndsm_image[x:x + image_size, y:y + image_size]
-#             ndsm_image_cropped = np.expand_dims(ndsm_image_cropped, axis=2)
-#             dsm_image_cropped = dsm_image[x:x + image_size, y:y + image_size]
-#             dsm_image_cropped = np.expand_dims(dsm_image_cropped, axis=2)
-#             array_to_save = np.concatenate((top_image_cropped, ndsm_image_cropped, dsm_image_cropped), axis=2).astype(dtype=np.float16)
-#             np.save(join(base_dir_validate, splitext(filename)[0] + "_" + str(i) + ".npy"), array_to_save)
-#             # imsave(join(base_dir_train, splitext(filename)[0] + "_" + str(i) + ".tif"), top_image_cropped)
-#             annotation_image_cropped = annotation_image[x:x + image_size, y:y + image_size]
-#             imsave(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(i) + ".png"),
-#                         annotation_image_cropped)
-        x = 0
-        y = 0
-        i = 0
-        while (x + image_size <= height):
-            while (y + image_size <= width):
-                print((x, y))
-                top_image_cropped = top_image[x:x + image_size, y:y + image_size, :]
-                ndsm_image_cropped = ndsm_image[x:x + image_size, y:y + image_size]
-                ndsm_image_cropped = np.expand_dims(ndsm_image_cropped, axis = 2)
-                dsm_image_cropped = dsm_image[x:x + image_size, y:y + image_size]
-                dsm_image_cropped = np.expand_dims(dsm_image_cropped, axis = 2)
-                array_to_save = np.concatenate((top_image_cropped, ndsm_image_cropped, dsm_image_cropped), axis=2).astype(dtype=np.float16)
-                np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(i) + ".npy"), array_to_save)
-                annotation_image_cropped = annotation_image[x:x + image_size, y:y + image_size]
-                imsave(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(i) + ".png"), annotation_image_cropped)
-                i += 1
-                y += STRIDE
-            x += STRIDE
-            y = 0
+        for i in range(num_cropping_per_image):
+            x = int(np.random.uniform(0, height - image_size + 1))
+            y = int(np.random.uniform(0, width - image_size + 1))
+            print((x, y))
+            top_image_cropped = top_image[x:x + image_size, y:y + image_size, :]
+            ndsm_image_cropped = ndsm_image[x:x + image_size, y:y + image_size]
+            ndsm_image_cropped = np.expand_dims(ndsm_image_cropped, axis=2)
+            dsm_image_cropped = dsm_image[x:x + image_size, y:y + image_size]
+            dsm_image_cropped = np.expand_dims(dsm_image_cropped, axis=2)
+            array_to_save = np.concatenate((top_image_cropped, ndsm_image_cropped, dsm_image_cropped), axis=2).astype(dtype=np.float16)
+            np.save(join(base_dir_validate, splitext(filename)[0] + "_" + str(i) + ".npy"), array_to_save)
+            # imsave(join(base_dir_train, splitext(filename)[0] + "_" + str(i) + ".tif"), top_image_cropped)
+            annotation_image_cropped = annotation_image[x:x + image_size, y:y + image_size]
+            imsave(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(i) + ".png"),
+                        annotation_image_cropped)
+#         x = 0
+#         y = 0
+#         i = 0
+#         while (x + image_size <= height):
+#             while (y + image_size <= width):
+#                 print((x, y))
+#                 top_image_cropped = top_image[x:x + image_size, y:y + image_size, :]
+#                 ndsm_image_cropped = ndsm_image[x:x + image_size, y:y + image_size]
+#                 ndsm_image_cropped = np.expand_dims(ndsm_image_cropped, axis = 2)
+#                 dsm_image_cropped = dsm_image[x:x + image_size, y:y + image_size]
+#                 dsm_image_cropped = np.expand_dims(dsm_image_cropped, axis = 2)
+#                 array_to_save = np.concatenate((top_image_cropped, ndsm_image_cropped, dsm_image_cropped), axis=2).astype(dtype=np.float16)
+#                 np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(i) + ".npy"), array_to_save)
+#                 annotation_image_cropped = annotation_image[x:x + image_size, y:y + image_size]
+#                 imsave(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(i) + ".png"), annotation_image_cropped)
+#                 i += 1
+#                 y += STRIDE
+#             x += STRIDE
+#             y = 0
     return None
 
 if __name__=="__main__":
