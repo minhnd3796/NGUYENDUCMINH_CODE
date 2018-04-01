@@ -163,8 +163,8 @@ def main(argv=None):
             utils.add_to_regularization_and_summary(var)
     train_op = train(loss, trainable_var)
 
-    # print("Setting up summary op...")
-    # summary_op = tf.summary.merge_all()
+    print("Setting up summary op...")
+    summary_op = tf.summary.merge_all()
 
     print("Setting up image reader...")
     train_records, valid_records = reader.read_dataset_resnet101(FLAGS.data_dir)
@@ -183,7 +183,7 @@ def main(argv=None):
     saver = tf.train.Saver()
 
     train_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/train', sess.graph)
-    #validation_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/validation')
+    validation_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/validation')
 
     sess.run(tf.global_variables_initializer())
     ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
