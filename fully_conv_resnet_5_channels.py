@@ -12,15 +12,15 @@ import tensor_utils_5_channels as utils
 
 from infer_imagenet_resnet_101 import resnet101_net
 
-FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer("batch_size", "32", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
-tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
-tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
-tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat",
-                       "Path to vgg model mat")
-tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
-tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
+#FLAGS = tf.flags.FLAGS
+#tf.flags.DEFINE_integer("batch_size", "32", "batch size for training")
+#tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
+#tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
+#tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
+#tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat",
+#                       "Path to vgg model mat")
+#tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
+#tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
 
 MODEL_URL = 'http://www.vlfeat.org/matconvnet/models/imagenet-resnet-101-dag.mat'
 
