@@ -208,8 +208,8 @@ def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=1
 if __name__ == "__main__":
     #tf.app.run()
     os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-    imsave("top_mosaic_09cm_area17.tif",
-           infer_little_img("../ISPRS_semantic_labeling_Vaihingen/top/top_mosaic_09cm_area17.tif"))
+    imsave("top_mosaic_09cm_area37.tif",
+           infer_little_img("../ISPRS_semantic_labeling_Vaihingen/top/top_mosaic_09cm_area37.tif"))
 
 
 # 2

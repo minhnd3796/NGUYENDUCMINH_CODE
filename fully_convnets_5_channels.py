@@ -1,6 +1,6 @@
 from __future__ import print_function
 import os
-
+import datetime
 import numpy as np
 import tensorflow as tf
 from six.moves import xrange
@@ -10,7 +10,7 @@ import data_reader_5channels as reader
 import tensor_utils_5_channels as utils
 
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer("batch_size", "5", "batch size for training")
+tf.flags.DEFINE_integer("batch_size", "32", "batch size for training")
 tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
@@ -113,7 +113,7 @@ def inference(image, keep_prob):
         W8 = utils.weight_variable([1, 1, 4096, NUM_OF_CLASSESS], name="W8")
         b8 = utils.bias_variable([NUM_OF_CLASSESS], name="b8")
         conv8 = utils.conv2d_basic(relu_dropout7, W8, b8)
-        # annotation_pred1 = tf.argmax(conv8, dimension=3, name="prediction1")
+        annotation_pred1 = tf.argmax(conv8, dimension=3, name="prediction1")
 
         # now to upscale to actual image size
         deconv_shape1 = image_net["pool4"].get_shape()
@@ -179,8 +179,8 @@ def main(argv=None):
             utils.add_to_regularization_and_summary(var)
     train_op = train(loss, trainable_var)
 
-    # print("Setting up summary op...")
-    # summary_op = tf.summary.merge_all()
+    print("Setting up summary op...")
+    summary_op = tf.summary.merge_all()
 
     print("Setting up image reader...")
     train_records, valid_records = reader.read_dataset(FLAGS.data_dir)
@@ -191,7 +191,7 @@ def main(argv=None):
     image_options = {'resize': False, 'resize_size': IMAGE_SIZE}
     if FLAGS.mode == 'train':
         train_dataset_reader = dataset.Batch_manager(train_records, image_options)
-    #validation_dataset_reader = dataset.Batch_manager(valid_records, image_options)
+    validation_dataset_reader = dataset.Batch_manager(valid_records, image_options)
 
     sess = tf.Session()
 
@@ -199,7 +199,7 @@ def main(argv=None):
     saver = tf.train.Saver()
 
     train_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/train', sess.graph)
-    #validation_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/validation')
+    validation_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/validation')
 
     sess.run(tf.global_variables_initializer())
     ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
@@ -218,14 +218,14 @@ def main(argv=None):
             train_writer.add_summary(summary_loss, itr)
             train_writer.add_summary(summary_acc, itr)
         if itr % 500 == 0:
-            # valid_images, valid_annotations = validation_dataset_reader.next_batch(FLAGS.batch_size)
-            # valid_loss, valid_acc, summary_loss, summary_acc = sess.run([loss, acc, loss_summary, acc_summary],
-            #                                  feed_dict={image: valid_images, annotation: valid_annotations,
-            #                                             keep_probability: 1.0})
-            # validation_writer.add_summary(summary_loss, itr)
-            # validation_writer.add_summary(summary_acc, itr)
-            # print("%s ---> Validation_loss: %g , Validation Accuracy: %g" % (
-            #     datetime.datetime.now(), valid_loss, valid_acc))
+            valid_images, valid_annotations = validation_dataset_reader.next_batch(FLAGS.batch_size)
+            valid_loss, valid_acc, summary_loss, summary_acc = sess.run([loss, acc, loss_summary, acc_summary],
+                                             feed_dict={image: valid_images, annotation: valid_annotations,
+                                                        keep_probability: 1.0})
+            validation_writer.add_summary(summary_loss, itr)
+            validation_writer.add_summary(summary_acc, itr)
+            print("%s ---> Validation_loss: %g , Validation Accuracy: %g" % (
+                datetime.datetime.now(), valid_loss, valid_acc))
             saver.save(sess, FLAGS.logs_dir + "model.ckpt", itr)
 
 

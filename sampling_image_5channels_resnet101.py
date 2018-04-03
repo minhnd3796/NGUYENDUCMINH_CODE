@@ -13,8 +13,8 @@ base_dir_ndsm = "../ISPRS_semantic_labeling_Vaihingen/ndsm"
 base_dir_dsm = "../ISPRS_semantic_labeling_Vaihingen/dsm"
 base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validate_gt_5channels_resnet101"
 image_size = 224
-num_cropping_per_image = 33333
-validate_image = ["top_mosaic_09cm_area17.png"]
+num_cropping_per_image = 8192
+validate_image = ["top_mosaic_09cm_area7.png","top_mosaic_09cm_area17.png","top_mosaic_09cm_area23.png","top_mosaic_09cm_area37.png"]
 # STRIDE = 56
 
 def create_training_dataset():

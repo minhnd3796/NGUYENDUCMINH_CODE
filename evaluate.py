@@ -1,8 +1,8 @@
 import numpy as np
 from scipy.misc import imread
 
-pred = imread('top_mosaic_09cm_area17.tif')
-annotation= imread('../ISPRS_semantic_labeling_Vaihingen/gts_for_participants/top_mosaic_09cm_area17.tif')
+pred = imread('top_mosaic_09cm_area37_vgg19.tif')
+annotation= imread('../ISPRS_semantic_labeling_Vaihingen/gts_for_participants/top_mosaic_09cm_area37.tif')
 height = np.shape(pred)[0]
 width = np.shape(annotation)[1]
 count = 0
