@@ -4,7 +4,6 @@ import numpy as np
 import tensorflow as tf
 from scipy.misc import imread, imsave
 from sys import argv
-import fully_conv_resnet
 
 import tensor_utils_5_channels as utils
 
@@ -16,6 +15,7 @@ tf.flags.DEFINE_string("logs_dir", "../logs-" + argv[1] + "/", "path to logs dir
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 if argv[1] == 'resnet101':
     tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to vgg model mat")
+    import fully_conv_resnet
 elif argv[1] == 'vgg19':
     tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat", "Path to vgg model mat")
 tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
