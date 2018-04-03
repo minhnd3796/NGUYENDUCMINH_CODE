@@ -54,6 +54,7 @@ def construct_test_batch_normalisation_block(current, net, weights, start_weight
 def construct_conv_bn_block(current, net, weights, start_weight_index, param_names, layer_names, stride):
     # conv
     kernel = weights[start_weight_index][1]
+    kernel = np.transpose(kernel, (1, 0, 2, 3))
     if param_names[0] == 'conv1_filter':
         appended_kernel = np.random.normal(loc=0, scale=0.02, size=(7, 7, 2, 64)) # for 5 channels
         kernel = np.concatenate((kernel, appended_kernel), axis=2)
