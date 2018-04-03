@@ -3,19 +3,23 @@ import os
 import numpy as np
 import tensorflow as tf
 from scipy.misc import imread, imsave
-
+from sys import argv
 import fully_conv_resnet
 
 import tensor_utils_5_channels as utils
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "1", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
-#tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
+tf.flags.DEFINE_string("logs_dir", "../logs-" + argv[1] + "/", "path to logs directory")
+# tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
+# tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
-tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to vgg model mat")
-#tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat", "Path to vgg model mat")
+if argv[1] == 'resnet101':
+    tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to vgg model mat")
+elif argv[1] == 'vgg19':
+    tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat", "Path to vgg model mat")
 tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
+
 MAX_ITERATION = int(1e6 + 1)
 NUM_OF_CLASSESS = 6
 IMAGE_SIZE = 224
@@ -149,8 +153,10 @@ def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=1
     sess= tf.Session()
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 5], name="input_image")
-    # _, logits = inference(image, keep_probability)
-    _, logits = fully_conv_resnet.inference(image, keep_probability)
+    if argv[1] == 'vgg19':
+        _, logits = inference(image, keep_probability)
+    elif argv[1] == 'resnet101':
+        _, logits = fully_conv_resnet.inference(image, keep_probability)
     saver = tf.train.Saver()
     sess.run(tf.global_variables_initializer())
     ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
@@ -208,8 +214,10 @@ def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=1
 if __name__ == "__main__":
     #tf.app.run()
     os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-    imsave("top_mosaic_09cm_area37.tif",
-           infer_little_img("../ISPRS_semantic_labeling_Vaihingen/top/top_mosaic_09cm_area37.tif"))
+    validation_image = ["top_mosaic_09cm_area7", "top_mosaic_09cm_area17", "top_mosaic_09cm_area37", "top_mosaic_09cm_area23"]
+    for image in validation_image:
+        imsave(image + '_' + argv[1] + '.tif',
+               infer_little_img("../ISPRS_semantic_labeling_Vaihingen/top/" + image + ".tif"))
 
 
 # 2
