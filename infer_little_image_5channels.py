@@ -214,10 +214,8 @@ def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=1
 if __name__ == "__main__":
     #tf.app.run()
     os.environ["CUDA_VISIBLE_DEVICES"] = argv[2]
-    validation_image = ["top_mosaic_09cm_area7", "top_mosaic_09cm_area17", "top_mosaic_09cm_area37", "top_mosaic_09cm_area23"]
-    for image in validation_image:
-        imsave(image + '_' + argv[1] + '.tif',
-               infer_little_img("../ISPRS_semantic_labeling_Vaihingen/top/" + image + ".tif"))
+    imsave("top_mosaic_09cm_area" + argv[3] + '_' + argv[1] + '.tif',
+           infer_little_img("../ISPRS_semantic_labeling_Vaihingen/top/" + "top_mosaic_09cm_area" + argv[3] + ".tif"))
 
 
 # 2
