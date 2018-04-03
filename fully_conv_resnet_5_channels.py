@@ -58,9 +58,9 @@ def vgg_net(weights, image):
                 append_channels= np.random.normal(loc=0,scale=0.02,size=(3,3,2,64))
                 print(append_channels)
                 kernels = np.concatenate((kernels, append_channels), axis=2)
-                kernels = utils.get_variable(np.transpose(kernels, (0, 1, 2, 3)), name=name + "_w")
+                kernels = utils.get_variable(np.transpose(kernels, (1, 0, 2, 3)), name=name + "_w")
             else:
-                kernels = utils.get_variable(np.transpose(kernels, (0, 1, 2, 3)), name=name + "_w")
+                kernels = utils.get_variable(np.transpose(kernels, (1, 0, 2, 3)), name=name + "_w")
             bias = utils.get_variable(bias.reshape(-1), name=name + "_b")
             current = utils.conv2d_basic(current, kernels, bias)
         elif kind == 'relu':
