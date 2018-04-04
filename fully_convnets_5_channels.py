@@ -81,9 +81,10 @@ def inference(image, keep_prob):
     print("setting up vgg initialized conv layers ...")
     model_data = utils.get_model_data(FLAGS.model_dir)
 
-    mean = model_data['normalization'][0][0][0]
-    mean_pixel = np.mean(mean, axis=(0, 1))
-    mean_pixel = np.append(mean_pixel, [30.6986130799, 284.97018])
+    # mean = model_data['normalization'][0][0][0]
+    # mean_pixel = np.mean(mean, axis=(0, 1))
+    # mean_pixel = np.append(mean_pixel, [30.6986130799, 284.97018])
+    mean_pixel = np.array([120.8952399852595, 81.93008162338278, 81.28988761879855, 30.69861307993539, 284.9702])
     weights = np.squeeze(model_data['layers'])
 
     processed_image = utils.process_image(image, mean_pixel)
