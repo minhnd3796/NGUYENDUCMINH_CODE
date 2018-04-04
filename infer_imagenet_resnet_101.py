@@ -1,7 +1,7 @@
 import os
 
 from sys import argv
-import tensor_utils as utils
+import tensor_utils_5_channels as utils
 import numpy as np
 import tensorflow as tf
 from scipy.io import loadmat
