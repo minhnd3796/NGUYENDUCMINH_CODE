@@ -113,7 +113,7 @@ def inference(image, keep_prob):
         W8 = utils.weight_variable([1, 1, 4096, NUM_OF_CLASSESS], name="W8")
         b8 = utils.bias_variable([NUM_OF_CLASSESS], name="b8")
         conv8 = utils.conv2d_basic(relu_dropout7, W8, b8)
-        annotation_pred1 = tf.argmax(conv8, dimension=3, name="prediction1")
+        annotation_pred1 = tf.argmax(conv8, axis=3, name="prediction1")
 
         # now to upscale to actual image size
         deconv_shape1 = image_net["pool4"].get_shape()
