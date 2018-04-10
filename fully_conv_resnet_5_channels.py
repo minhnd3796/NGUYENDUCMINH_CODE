@@ -10,7 +10,7 @@ import Batch_manager_5channels as dataset
 import data_reader_5channels as reader
 import tensor_utils_5_channels as utils
 
-from infer_imagenet_resnet_101 import resnet101_net
+from infer_imagenet_resnet_101_5chan import resnet101_net
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "32", "batch size for training")

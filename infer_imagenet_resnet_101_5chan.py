@@ -1,7 +1,7 @@
 import os
 
 from sys import argv
-import tensor_utils as utils
+import tensor_utils_5_channels as utils
 import numpy as np
 import tensorflow as tf
 from scipy.io import loadmat
@@ -54,7 +54,13 @@ def construct_test_batch_normalisation_block(current, net, weights, start_weight
 def construct_conv_bn_block(current, net, weights, start_weight_index, param_names, layer_names, stride):
     # conv
     kernel = weights[start_weight_index][1]
-    kernel = utils.get_variable(kernel, name=param_names[0])
+    kernel = np.transpose(kernel, (1, 0, 2, 3))
+    if param_names[0] == 'conv1_filter':
+        appended_kernel = np.random.normal(loc=0, scale=0.02, size=(7, 7, 2, 64)) # for 5 channels
+        kernel = np.concatenate((kernel, appended_kernel), axis=2)
+    else:
+        kernel = utils.get_variable(kernel, name=param_names[0])
+        print('TRIGGERED!')
     if stride == 1:
         current = tf.nn.conv2d(current, kernel, strides=[1, 1, 1, 1], padding='SAME', name=layer_names[0])
     else:
@@ -186,7 +192,7 @@ def inference(x, weights):
     return prediction, image_net
 
 def main(argv=None):
-    os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     resnet101_net = utils.get_model_data('../pretrained_models/imagenet-resnet-101-dag.mat')
     weights = np.squeeze(resnet101_net['params'])
 
