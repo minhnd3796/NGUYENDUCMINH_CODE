@@ -13,7 +13,7 @@ import tensor_utils as utils
 import os
 
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer("batch_size", "5", "batch size for training")
+tf.flags.DEFINE_integer("batch_size", "32", "batch size for training")
 tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-5", "Learning rate for Adam Optimizer")
@@ -146,11 +146,11 @@ def main(argv=None):
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 3], name="input_image")
     annotation = tf.placeholder(tf.int32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 1], name="annotation")
     pred_annotation, logits = inference(image, keep_probability)
-    annotation_64= tf.cast(annotation, dtype=tf.int64)
+    annotation_64 = tf.cast(annotation, dtype=tf.int64)
     # calculate accuracy for batch.
     cal_acc = tf.equal(pred_annotation, annotation_64)
     cal_acc = tf.cast(cal_acc, dtype=tf.int8)
-    acc = tf.count_nonzero(cal_acc)/(FLAGS.batch_size * IMAGE_SIZE *IMAGE_SIZE)
+    acc = tf.count_nonzero(cal_acc)/(FLAGS.batch_size * IMAGE_SIZE * IMAGE_SIZE)
 
     tf.summary.image("input_image", image, max_outputs=2)
     tf.summary.image("ground_truth", tf.cast(annotation, tf.uint8), max_outputs=2)

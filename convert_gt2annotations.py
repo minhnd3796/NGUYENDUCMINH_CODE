@@ -1,15 +1,17 @@
 import os
 
 import numpy as np
-from scipy import misc
+# from scipy import misc
+from cv2 import imread, imwrite
 # from PIL import Image
 
 ground_truth_path = "../ISPRS_semantic_labeling_Vaihingen/gts_for_participants"
 annotaions_path = "../ISPRS_semantic_labeling_Vaihingen/annotations"
-high = 4
+# high = 4
 
 for filename in os.listdir(ground_truth_path):
-    image= misc.imread(os.path.join(ground_truth_path, filename))
+    # image = misc.imread(os.path.join(ground_truth_path, filename))
+    image = imread(os.path.join(ground_truth_path, filename))
     annotation_image=np.zeros((np.shape(image)[0], np.shape(image)[1]))
     for i in range(np.shape(image)[0]):
         for j in range(np.shape(image)[1]):
@@ -30,10 +32,11 @@ for filename in os.listdir(ground_truth_path):
                 annotation_image[i, j] = 4
             else:
                 # Clutter/background (RGB: 255, 0, 0)
-                high = 5
+                # high = 5
                 annotation_image[i, j] = 5
     annotation_filename = os.path.splitext(filename)[0]
     print(">> Processing", annotation_image)
-    misc.toimage(annotation_image, high = high, low=0).save(os.path.join(annotaions_path, annotation_filename + ".png"))
+    # misc.toimage(annotation_image, high = high, low=0).save(os.path.join(annotaions_path, annotation_filename + ".png"))
+    imwrite(os.path.join(annotaions_path, annotation_filename + ".png"), annotation_image)
     # Image.fromarray(annotation_image).save(os.path.join(annotaions_path, annotation_filename + ".png"))
-print("Done!")
+print('Done!')
