@@ -1,7 +1,7 @@
 import os
 
 import numpy as np
-# from scipy import misc
+from scipy import misc
 from cv2 import imread, imwrite
 # from PIL import Image
 

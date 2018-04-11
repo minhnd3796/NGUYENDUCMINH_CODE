@@ -1,5 +1,6 @@
 import numpy as np
-import scipy.misc as misc
+# import scipy.misc as misc
+from cv2 import imread
 
 
 class Batch_manager:
@@ -32,12 +33,16 @@ class Batch_manager:
         self.images = np.array([self._transform(filename['image']) for filename in self.files])
         self.__channels = False
         self.annotations = np.array(
-            [np.expand_dims(self._transform(filename['annotation']), axis=3) for filename in self.files])
+            [np.expand_dims(self._transform(filename['annotation'], False), axis=3) for filename in self.files])
         print (self.images.shape)
         print (self.annotations.shape)
 
-    def _transform(self, filename):
-        image = misc.imread(filename)
+    def _transform(self, filename, color=True):
+        # image = misc.imread(filename)
+        if color == True:
+            image = imread(filename)
+        else:
+            image = imread(filename, -1)
         if self.__channels and len(image.shape) < 3:  # make sure images are of shape(h,w,3)
             image = np.array([image for i in range(3)])
 

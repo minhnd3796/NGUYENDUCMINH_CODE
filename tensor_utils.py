@@ -2,9 +2,10 @@ import os
 from functools import reduce
 
 import scipy.io
-import scipy.misc as misc
+# import scipy.misc as misc
 import tensorflow as tf
 import numpy as np
+from cv2 import imwrite
 
 
 def get_model_data(filepath):
@@ -16,7 +17,8 @@ def get_model_data(filepath):
 def save_image(image, save_dir, name, mean=None):
     if mean:
         image = unprocess_image(image, mean)
-    misc.imsave(os.path.join(save_dir, name + ".png"), image)
+    # misc.imsave(os.path.join(save_dir, name + ".png"), image)
+    imwrite(os.path.join(save_dir, name + ".png"), image)
 
 def get_variable(weights, name):
     init = tf.constant_initializer(weights, dtype=tf.float32)

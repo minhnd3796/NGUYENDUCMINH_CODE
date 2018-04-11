@@ -1,16 +1,31 @@
 import numpy as np
-from scipy.misc import imread
+# from scipy.misc import imread
+from cv2 import imread
+from sys import argv
 
-pred = imread('top_mosaic_09cm_area34.tif')
-annotation= imread('../ISPRS_semantic_labeling_Vaihingen/gts_for_participants/top_mosaic_09cm_area34.tif')
-height = np.shape(pred)[0]
-width = np.shape(annotation)[1]
-count = 0
-for i in range(height):
-    for j in range(width):
-        if np.array_equal(pred[i,j,:],annotation[i,j,:]):
-           count+=1
-print("Accuracy: "+ str(count/(height*width)))
+# validation_image = ['top_mosaic_09cm_area7', 'top_mosaic_09cm_area17',
+#                     'top_mosaic_09cm_area23', 'top_mosaic_09cm_area37']
+
+validation_image = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
+                    'top_mosaic_09cm_area11', 'top_mosaic_09cm_area13', 'top_mosaic_09cm_area15',
+                    'top_mosaic_09cm_area21', 'top_mosaic_09cm_area26', 'top_mosaic_09cm_area28',
+                    'top_mosaic_09cm_area30', 'top_mosaic_09cm_area32', 'top_mosaic_09cm_area34']
+
+match = 0
+num_pix = 0
+
+for image in validation_image:
+    pred = imread(image + '_' + argv[1] + '.tif')
+    annotation = imread('../ISPRS_semantic_labeling_Vaihingen/gts_for_participants/' + image + '.tif')
+    height = np.shape(pred)[0]
+    width = np.shape(annotation)[1]
+    num_pix += height * width
+    print('>> Evaluating', image + '_' + argv[1] + '.tif')
+    for i in range(height):
+        for j in range(width):
+            if np.array_equal(pred[i,j,:],annotation[i,j,:]):
+                match += 1
+print("!! Accuracy:", match / num_pix)
 # 7  Accuracy: 0.8903082843132074
 # 17 Accuracy: 0.8781703479730091
 # 23 Accuracy: 0.8522438833297077
