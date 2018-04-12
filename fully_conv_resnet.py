@@ -11,18 +11,18 @@ from six.moves import xrange
 import Batch_manager as dataset
 import data_reader as scene_parsing
 import tensor_utils as utils
-
+from sys import argv
 from infer_imagenet_resnet_101 import resnet101_net
 
 FLAGS = tf.flags.FLAGS
-# tf.flags.DEFINE_integer("batch_size", "5", "batch size for training")
-# tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
-# tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
-# tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
-# tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat",
-#                        "Path to resnet-101 model mat")
-# tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
-# tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
+tf.flags.DEFINE_integer("batch_size", "32", "batch size for training")
+tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
+tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
+tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
+tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat",
+                       "Path to resnet-101 model mat")
+tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
+tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
 
 MODEL_URL = 'http://www.vlfeat.org/matconvnet/models/imagenet-resnet-101-dag.mat'
 
@@ -87,7 +87,7 @@ def train(loss_val, var_list):
 
 
 def main(argv=None):
-    os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+    os.environ["CUDA_VISIBLE_DEVICES"] = argv[1]
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 3], name="input_image")
     annotation = tf.placeholder(tf.int32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 1], name="annotation")
