@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.misc as misc
+from cv2 import imread
 
 
 class Batch_manager:
@@ -43,18 +43,7 @@ class Batch_manager:
         return np.array(image).astype(np.float16)
 
     def _transform_annotations(self, filename):
-        image = misc.imread(filename)
-        if self.__channels and len(image.shape) < 3:  # make sure images are of shape(h,w,3)
-            image = np.array([image for i in range(3)])
-
-        # if self.image_options.get("resize", False) and self.image_options["resize"]:
-        #     resize_size = int(self.image_options["resize_size"])
-        #     resize_image = misc.imresize(image,
-        #                                  [resize_size, resize_size], interp='nearest')
-        # else:
-        #     resize_image = image
-
-        return np.array(image)
+        return imread(filename, -1)
 
     def get_records(self):
         return self.images, self.annotations

@@ -2,7 +2,8 @@ import os
 
 import cv2
 import numpy as np
-from scipy.misc import imread
+# from scipy.misc import imread
+from cv2 import imread
 
 BASE_DIRECTORY = '../ISPRS_semantic_labeling_Vaihingen'
 
@@ -134,7 +135,7 @@ print() """
 # 106.314329243
 #
 # DSM:
-# 284.97018
+# 284.9702
 #
 # B:
 # 109.260369903
@@ -152,7 +153,7 @@ print() """
 # 84.3529895303
 #
 # ndsm:
-# 30.6986130799
+# 30.69861307993539
 #
 # ndvi:
 # 66.8837693324

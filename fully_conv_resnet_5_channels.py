@@ -11,6 +11,7 @@ import data_reader_5channels as reader
 import tensor_utils_5_channels as utils
 
 from infer_imagenet_resnet_101_5chan import resnet101_net
+from sys import argv
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "32", "batch size for training")
@@ -58,9 +59,9 @@ def vgg_net(weights, image):
                 append_channels= np.random.normal(loc=0,scale=0.02,size=(3,3,2,64))
                 print(append_channels)
                 kernels = np.concatenate((kernels, append_channels), axis=2)
-                kernels = utils.get_variable(np.transpose(kernels, (1, 0, 2, 3)), name=name + "_w")
+                kernels = utils.get_variable(kernels, name=name + "_w")
             else:
-                kernels = utils.get_variable(np.transpose(kernels, (1, 0, 2, 3)), name=name + "_w")
+                kernels = utils.get_variable(kernels, name=name + "_w")
             bias = utils.get_variable(bias.reshape(-1), name=name + "_b")
             current = utils.conv2d_basic(current, kernels, bias)
         elif kind == 'relu':
@@ -89,8 +90,8 @@ def inference(image, keep_prob):
     mean_pixel[:, :, 0] = mean_pixel_init[:, :, 0]
     mean_pixel[:, :, 1] = mean_pixel_init[:, :, 1]
     mean_pixel[:, :, 2] = mean_pixel_init[:, :, 2]
-    mean_pixel[:, :, 3] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 30.6986130799
-    mean_pixel[:, :, 4] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 284.97018
+    mean_pixel[:, :, 3] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 30.69861307993539
+    mean_pixel[:, :, 4] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 284.9702
 
     normalised_img = utils.process_image(image, mean_pixel)
 
@@ -136,7 +137,7 @@ def train(loss_val, var_list):
 
 
 def main(argv=None):
-    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+    os.environ["CUDA_VISIBLE_DEVICES"] = argv[1]
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 5], name="input_image")
     annotation = tf.placeholder(tf.int32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 1], name="annotation")

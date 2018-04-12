@@ -40,10 +40,10 @@ for img_name in training_image:
         i += STRIDE
 
 print("No. of training images:", num_training_crops)
-print("Training size:", num_training_crops * 92.0 / 1024.0 / 1024.0)
+print("Training size:", num_training_crops * 504271.0 / 1024.0 / 1024.0 / 1024.0)
 print()
 print("No. of validation images:", num_validation_crops)
-print("Validation size:", num_validation_crops * 92.0 / 1024.0 / 1024.0)
+print("Validation size:", num_validation_crops * 504271.0 / 1024.0 / 1024.0 / 1024.0)
 print()
 print("Total:", num_training_crops + num_validation_crops)
-print("Total size:", (num_training_crops + num_validation_crops) * 92.0 / 1024.0 / 1024.0)
+print("Total size:", (num_training_crops + num_validation_crops) * 504271.0 / 1024.0 / 1024.0 / 1024.0)
