@@ -22,6 +22,7 @@ def save_image(image, save_dir, name, mean=None):
 
 def get_variable(weights, name):
     init = tf.constant_initializer(weights, dtype=tf.float32)
+    # init = tf.contrib.layers.xavier_initializer()
     var = tf.get_variable(name=name, initializer=init,  shape=weights.shape)
     return var
 

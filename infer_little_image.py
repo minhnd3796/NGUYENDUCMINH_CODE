@@ -3,7 +3,6 @@ argv[1]: vgg19 or resnet101
 argv[2]: id of GPU
 '''
 
-
 from __future__ import print_function
 
 import numpy as np
@@ -131,109 +130,6 @@ def inference(image, keep_prob):
 
     return tf.expand_dims(annotation_pred, dim=3), conv_t3
 
-# def infer_little_img(little_image):
-#     tf.reset_default_graph()
-#     sess= tf.Session()
-#     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
-#     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 3], name="input_image")
-#     pred_annotation, logits = inference(image, keep_probability)
-#     saver = tf.train.Saver()
-#     sess.run(tf.global_variables_initializer())
-#     ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
-#     if ckpt and ckpt.model_checkpoint_path:
-#         saver.restore(sess, ckpt.model_checkpoint_path)
-#         print("Model restored...")
-#
-#     test_image = little_image
-#     test_image_batch = np.expand_dims(test_image, axis=0)
-#     logits_result = sess.run(logits, feed_dict={image: test_image_batch, keep_probability: 1.0})
-#     logits_result = tf.squeeze(logits_result)
-#     result= sess.run(logits_result)
-#     sess.close()
-#     return result
-
-
-# def main(argv=None):
-#     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
-#     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 3], name="input_image")
-#     annotation = tf.placeholder(tf.int32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 1], name="annotation")
-#     pred_annotation, logits = inference(image, keep_probability)
-#     tf.summary.image("input_image", image, max_outputs=2)
-#     tf.summary.image("ground_truth", tf.cast(annotation, tf.uint8), max_outputs=2)
-#     tf.summary.image("pred_annotation", tf.cast(pred_annotation, tf.uint8), max_outputs=2)
-#     print("Setting up summary op...")
-#     summary_op = tf.summary.merge_all()
-#     print("Setting up image reader...")
-#     sess = tf.Session()
-#     print("Setting up Saver...")
-#     saver = tf.train.Saver()
-#     summary_writer = tf.summary.FileWriter(FLAGS.logs_dir, sess.graph)
-#     sess.run(tf.global_variables_initializer())
-#     ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
-#     if ckpt and ckpt.model_checkpoint_path:
-#         saver.restore(sess, ckpt.model_checkpoint_path)
-#         print("Model restored...")
-#
-#
-#
-#     test_image= imread('ISPRS_semantic_labeling_Vaihingen/validate/top_mosaic_09cm_area7_6.tif')
-#     test_image_annotation = imread('ISPRS_semantic_labeling_Vaihingen/train_validate_gt/top_mosaic_09cm_area7_6.png')
-#     test_image_batch= np.expand_dims(test_image,axis=0)
-#     test_image_annotation_batch= np.expand_dims(np.expand_dims(test_image_annotation,axis=0),axis=3)
-#     pred,logits_result = sess.run([pred_annotation,logits], feed_dict={image: test_image_batch,
-#                                                 keep_probability: 1.0})
-#
-#     annotation= tf.cast(annotation,dtype=tf.int64)
-#     print("Annotation")
-#     print(sess.run(annotation, feed_dict={annotation: test_image_annotation_batch}))
-#
-#     cal_acc = tf.equal(pred, annotation)
-#     print("Accuracy matrix")
-#     print(sess.run(cal_acc, feed_dict={annotation: test_image_annotation_batch}))
-#     cal_acc = tf.cast(cal_acc, dtype=tf.int8)
-#     print("Cast to int")
-#     print(sess.run(cal_acc, feed_dict={annotation: test_image_annotation_batch}))
-#     acc = tf.count_nonzero(cal_acc)/(FLAGS.batch_size*IMAGE_SIZE*IMAGE_SIZE)
-#     print("number of ok pixel")
-#     print(sess.run(acc, feed_dict={annotation: test_image_annotation_batch}))
-#
-#
-#     pred=tf.squeeze(pred)
-#     logits_result= tf.squeeze(logits_result)
-#
-#     # print(sess.run(pred))
-#     # print(sess.run(tf.shape(logits_result)))
-#     # print(sess.run(acc, feed_dict={annotation: test_image_annotation_batch}))
-#
-#     input_image= sess.run(pred)
-#     output_image = np.zeros([np.shape(input_image)[0], np.shape(input_image)[1], 3])
-#     for i in range(np.shape(input_image)[0]):
-#         for j in range(np.shape(input_image)[1]):
-#             if input_image[i, j] == 0:
-#                 output_image[i, j, :] = [255, 255, 255]
-#             elif input_image[i, j] == 1:
-#                 output_image[i, j, :] = [0, 0, 255]
-#             elif input_image[i, j] == 2:
-#                 output_image[i, j, :] = [0, 255, 255]
-#             elif input_image[i, j] == 3:
-#                 output_image[i, j, :] = [0, 255, 0]
-#             elif input_image[i, j] == 4:
-#                 output_image[i, j, :] = [255, 255, 0]
-#             elif input_image[i, j] == 5:
-#                 output_image[i, j, :] = [255, 0, 0]
-#     imsave('predict_color_1.png', output_image)
-
-
-# def main(argv=None):
-#     test_image = imread('ISPRS_semantic_labeling_Vaihingen/validate/top_mosaic_09cm_area7_6.tif')
-#     test_image_1 = imread('ISPRS_semantic_labeling_Vaihingen/validate/top_mosaic_09cm_area7_7.tif')
-#     test_image_2 = imread('ISPRS_semantic_labeling_Vaihingen/validate/top_mosaic_09cm_area7_8.tif')
-#     print(infer_little_img(little_image=test_image))
-#     print(infer_little_img(test_image_1))
-#     print(infer_little_img(test_image_2))
-
-
-
 def infer_little_img(input_tensor, logits, keep_probability, sess, image_name, patch_size=224,stride_ver=112,stride_hor=112):
     input_image = imread("../ISPRS_semantic_labeling_Vaihingen/top/" + image_name + ".tif")
     # input_image = scipy.misc.imread("../ISPRS_semantic_labeling_Vaihingen/top/" + image_name + ".tif")
@@ -244,7 +140,7 @@ def infer_little_img(input_tensor, logits, keep_probability, sess, image_name, p
     number_of_vertical_points = (height - patch_size) // stride_ver + 1
     number_of_horizontial_points = (width - patch_size) // stride_hor + 1
     
-    input_image= np.expand_dims(input_image, axis=0)
+    input_image = np.expand_dims(input_image, axis=0)
     for i in range(number_of_vertical_points):
         for j in range(number_of_horizontial_points):
             current_patch = input_image[:,i * stride_ver:i * stride_ver + patch_size,

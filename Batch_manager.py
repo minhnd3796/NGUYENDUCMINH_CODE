@@ -76,7 +76,11 @@ class Batch_manager:
             # Start next epoch
             start = 0
             self.batch_offset = batch_size
-
+        elif start == 0:
+            perm = np.arange(self.images.shape[0])
+            np.random.shuffle(perm)
+            self.images = self.images[perm]
+            self.annotations = self.annotations[perm]
         end = self.batch_offset
         return self.images[start:end], self.annotations[start:end]
 

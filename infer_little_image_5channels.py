@@ -1,24 +1,21 @@
+'''
+argv[1]: vgg19 or resnet101
+argv[2]: id of GPU
+'''
+
 from __future__ import print_function
 import os
 import numpy as np
 import tensorflow as tf
-from scipy.misc import imread, imsave
+# from scipy.misc import imread, imsave
+from cv2 import imread, imwrite
 from sys import argv
 
 import tensor_utils_5_channels as utils
 
+from fully_conv_resnet_5_channels import inference as resnet_inference
+
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer("batch_size", "1", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "../logs-" + argv[1] + "/", "path to logs directory")
-# tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
-# tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
-tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
-if argv[1] == 'resnet101':
-    tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to vgg model mat")
-    import fully_conv_resnet
-elif argv[1] == 'vgg19':
-    tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat", "Path to vgg model mat")
-tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
 
 MAX_ITERATION = int(1e6 + 1)
 NUM_OF_CLASSESS = 6
@@ -136,13 +133,14 @@ def inference(image, keep_prob):
     return tf.expand_dims(annotation_pred, dim=3), conv_t3
 
 
-def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=112):
-    input_image= imread(input_image_path)
-    dsm_image= imread(input_image_path.replace('top','dsm').replace('_mosaic','').replace('area','matching_area'))
-    ndsm_image= imread(input_image_path.replace('top/','ndsm/').replace('top','dsm').replace('_mosaic','')
-                       .replace('area','matching_area').replace('.tif','_normalized.jpg'))
-    dsm_image= np.expand_dims(dsm_image,axis=2)
-    ndsm_image= np.expand_dims(ndsm_image,axis=2)
+def infer_little_img(input_tensor, logits, keep_probability, sess, image_name,patch_size=224,stride_ver=112,stride_hor=112,log_dir='',epoch_num=''):
+    input_image_path = "../ISPRS_semantic_labeling_Vaihingen/top/" + image_name + ".tif"
+    input_image = imread(input_image_path)
+    dsm_image = imread(input_image_path.replace('top','dsm').replace('_mosaic','').replace('area','matching_area'), -1)
+    ndsm_image = imread(input_image_path.replace('top/','ndsm/').replace('top','dsm').replace('_mosaic','')
+                       .replace('area','matching_area').replace('.tif','_normalized.jpg'), -1)
+    dsm_image = np.expand_dims(dsm_image, axis=2)
+    ndsm_image = np.expand_dims(ndsm_image, axis=2)
     height = np.shape(input_image)[0]
     width = np.shape(input_image)[1]
     output_image = np.zeros_like(input_image)
@@ -150,25 +148,13 @@ def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=1
     output_map = np.zeros((height, width, 6), dtype=np.float32)
     number_of_vertical_points = (height - patch_size) // stride_ver + 1
     number_of_horizontial_points = (width - patch_size) // stride_hor + 1
-    sess= tf.Session()
-    keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
-    image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 5], name="input_image")
-    if argv[1] == 'vgg19':
-        _, logits = inference(image, keep_probability)
-    elif argv[1] == 'resnet101':
-        _, logits = fully_conv_resnet.inference(image, keep_probability)
-    saver = tf.train.Saver()
-    sess.run(tf.global_variables_initializer())
-    ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
-    if ckpt and ckpt.model_checkpoint_path:
-        saver.restore(sess, ckpt.model_checkpoint_path)
-        print("Model restored...")
+
     input_image= np.expand_dims(input_image,axis=0)
     for i in range(number_of_vertical_points):
         for j in range(number_of_horizontial_points):
             current_patch = input_image[:,i * stride_ver:i * stride_ver + patch_size,
                             j * stride_hor:j * stride_hor + patch_size, :]
-            logits_result = sess.run(logits, feed_dict={image: current_patch, keep_probability: 1.0})
+            logits_result = sess.run(logits, feed_dict={input_tensor: current_patch, keep_probability: 1.0})
             logits_result = tf.squeeze(logits_result)
             patch_result= sess.run(logits_result)
             output_map[i * stride_ver:i * stride_ver + patch_size, j * stride_hor:j * stride_hor + patch_size,
@@ -176,20 +162,20 @@ def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=1
             print('stage 1: i='+str(i)+"; j="+str(j))
     for i in range(number_of_vertical_points):
         current_patch= input_image[:,i*stride_ver:i*stride_ver+patch_size,width-patch_size:width,:]
-        logits_result = sess.run(logits, feed_dict={image: current_patch, keep_probability: 1.0})
+        logits_result = sess.run(logits, feed_dict={input_tensor: current_patch, keep_probability: 1.0})
         logits_result = tf.squeeze(logits_result)
         patch_result = sess.run(logits_result)
         output_map[i*stride_ver:i*stride_ver+patch_size,width-patch_size:width,:]+=patch_result
         print('stage 2: i=' + str(i) + "; j=" + str(j))
     for i in range(number_of_horizontial_points):
         current_patch= input_image[:,height-patch_size:height,i*stride_hor:i*stride_hor+patch_size,:]
-        logits_result = sess.run(logits, feed_dict={image: current_patch, keep_probability: 1.0})
+        logits_result = sess.run(logits, feed_dict={input_tensor: current_patch, keep_probability: 1.0})
         logits_result = tf.squeeze(logits_result)
         patch_result = sess.run(logits_result)
         output_map[height-patch_size:height,i*stride_hor:i*stride_hor+patch_size,:]+=patch_result
         print('stage 3: i=' + str(i) + "; j=" + str(j))
     current_patch = input_image[:,height - patch_size:height, width - patch_size:width, :]
-    logits_result = sess.run(logits, feed_dict={image: current_patch, keep_probability: 1.0})
+    logits_result = sess.run(logits, feed_dict={input_tensor: current_patch, keep_probability: 1.0})
     logits_result = tf.squeeze(logits_result)
     patch_result = sess.run(logits_result)
     output_map[height - patch_size:height, width - patch_size:width, :] += patch_result
@@ -209,14 +195,55 @@ def infer_little_img(input_image_path,patch_size=224,stride_ver=112,stride_hor=1
                 output_image[i,j,:]=[255,255,0]
             elif predict_annotation_image[i,j]==5:
                 output_image[i,j,:]=[255,0,0]
-    return output_image
+    if epoch_num != '':
+        epoch_num += '/'
+        if not exists(log_dir + 'inferred_images/' + epoch_num):
+            mkdir(log_dir + 'inferred_images/' + epoch_num)
+    imwrite(log_dir + 'inferred_images/' + epoch_num + image_name + '_' + argv[1] + '.tif', output_image)
 
 if __name__ == "__main__":
     #tf.app.run()
     os.environ["CUDA_VISIBLE_DEVICES"] = argv[2]
-    imsave("top_mosaic_09cm_area" + argv[3] + '_' + argv[1] + '.tif',
-           infer_little_img("../ISPRS_semantic_labeling_Vaihingen/top/" + "top_mosaic_09cm_area" + argv[3] + ".tif"))
 
+    # tf.flags.DEFINE_integer("batch_size", "1", "batch size for training")
+    # tf.flags.DEFINE_string("logs_dir", "../logs-" + argv[1] + "/", "path to logs directory")
+    # tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
+    # if argv[1] == 'resnet101':
+        # tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to vgg model mat")
+    if argv[1] == 'vgg19':
+        tf.flags.DEFINE_string("logs_dir", "../logs-" + argv[1] + "/", "path to logs directory")
+        tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat", "Path to vgg model mat")
+        tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
+        tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
+        tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
+
+    if argv[3] == 'val':
+        inferred_image = ['top_mosaic_09cm_area7', 'top_mosaic_09cm_area17', 'top_mosaic_09cm_area23',
+                          'top_mosaic_09cm_area37']
+    elif argv[3] == 'train':
+        inferred_image = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
+                          'top_mosaic_09cm_area11', 'top_mosaic_09cm_area13', 'top_mosaic_09cm_area15',
+                          'top_mosaic_09cm_area21', 'top_mosaic_09cm_area26', 'top_mosaic_09cm_area28',
+                          'top_mosaic_09cm_area30', 'top_mosaic_09cm_area32', 'top_mosaic_09cm_area34']
+
+    sess = tf.Session()
+    keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
+    input_tensor = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 5], name="input_image")
+    if argv[1] == 'vgg19':
+        _, logits = inference(input_tensor, keep_probability)
+    elif argv[1] == 'resnet101':
+        _, logits = resnet_inference(input_tensor, keep_probability)
+    saver = tf.train.Saver()
+    sess.run(tf.global_variables_initializer())
+    ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
+    if ckpt and ckpt.model_checkpoint_path:
+        saver.restore(sess, ckpt.model_checkpoint_path)
+        print("Model restored...")
+
+    # imwrite("top_mosaic_09cm_area" + argv[3] + '_' + argv[1] + '.tif',
+    #        infer_little_img("../ISPRS_semantic_labeling_Vaihingen/top/" + "top_mosaic_09cm_area" + argv[3] + ".tif"))
+    for image_name in inferred_image:
+        infer_little_img(input_tensor, logits, keep_probability, sess, image_name)
 
 # 2
 # 4

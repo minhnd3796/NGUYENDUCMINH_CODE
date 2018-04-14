@@ -1,20 +1,20 @@
 from cv2 import imread, imwrite
 from os.path import join, splitext
-from os import listdir
-
+from os import listdir, mkdir
+from os.path import exists
 import numpy as np
 # from scipy.misc import imread, imsave
 
-base_dir_train = "../ISPRS_semantic_labeling_Vaihingen/train_5channels"
+base_dir_train = "../ISPRS_semantic_labeling_Vaihingen/train_5channels.bak"
 # base_dir_train = "../ISPRS_semantic_labeling_Vaihingen/train_5channels_resnet101"
 base_dir_tiny_train = "../ISPRS_semantic_labeling_Vaihingen/tiny_train_5channels"
-base_dir_validate = "../ISPRS_semantic_labeling_Vaihingen/validate_5channels"
+base_dir_validate = "../ISPRS_semantic_labeling_Vaihingen/validate_5channels.bak"
 base_dir_annotations = "../ISPRS_semantic_labeling_Vaihingen/annotations"
 base_dir_top = "../ISPRS_semantic_labeling_Vaihingen/top"
 base_dir_ndsm = "../ISPRS_semantic_labeling_Vaihingen/ndsm"
 base_dir_dsm = "../ISPRS_semantic_labeling_Vaihingen/dsm"
 base_dir_tiny_train_gt = "../ISPRS_semantic_labeling_Vaihingen/tiny_train_gt_5channels"
-base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validate_gt_5channels"
+base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validate_gt_5channels.bak"
 # base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validate_gt_5channels_resnet101"
 image_size = 224
 num_cropping_per_image = 3333
@@ -22,6 +22,10 @@ validate_image = ["top_mosaic_09cm_area7.png","top_mosaic_09cm_area17.png","top_
 #validate_image = []
 
 def create_training_dataset():
+    if not exists(base_dir_train):
+        mkdir(base_dir_train)
+    if not exists(base_dir_train_validate_gt):
+        mkdir(base_dir_train_validate_gt)
     for filename in listdir(base_dir_annotations):
         if filename in validate_image:
             continue
@@ -56,6 +60,8 @@ def create_training_dataset():
 
 
 def create_validation_dataset():
+    if not exists(base_dir_validate):
+        mkdir(base_dir_validate)
     for filename in validate_image:
         top_image = imread(join(base_dir_top, splitext(filename)[0] + ".tif"))
         annotation_image = imread(join(base_dir_annotations, filename), -1)
@@ -83,5 +89,6 @@ def create_validation_dataset():
     return None
 
 if __name__=="__main__":
+    np.random.seed(3796)
     create_training_dataset()
     create_validation_dataset()

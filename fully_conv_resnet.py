@@ -15,7 +15,7 @@ from sys import argv
 from infer_imagenet_resnet_101 import resnet101_net
 
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer("batch_size", "5", "batch size for training")
+tf.flags.DEFINE_integer("batch_size", "33", "batch size for training")
 tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")

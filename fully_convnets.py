@@ -13,13 +13,13 @@ import tensor_utils as utils
 import os
 
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer("batch_size", "5", "batch size for training")
+tf.flags.DEFINE_integer("batch_size", "33", "batch size for training")
 tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
 tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat",
                        "Path to vgg model mat")
-tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
+tf.flags.DEFINE_bool('debug', "True", "Debug mode: True/ False")
 tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
 
 MODEL_URL = 'http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat'
@@ -208,7 +208,7 @@ def main(argv=None):
                 print("Step: %d, Train_loss: %g, Train_acc: %g" % (itr, train_loss, train_acc))
                 summary_writer.add_summary(summary_str, itr)
 
-            if itr % 500 == 0:
+            if itr % 150 == 0:
                 valid_images, valid_annotations = validation_dataset_reader.next_batch(FLAGS.batch_size)
                 valid_loss, valid_acc = sess.run([loss, acc], feed_dict={image: valid_images, annotation: valid_annotations,
                                                        keep_probability: 1.0})

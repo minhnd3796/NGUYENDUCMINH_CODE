@@ -2,8 +2,10 @@ import os
 from functools import reduce
 
 import scipy.io
-import scipy.misc as misc
+# import scipy.misc as misc
 import tensorflow as tf
+import numpy as np
+from cv2 import imwrite
 
 
 def get_model_data(filepath):
@@ -15,16 +17,18 @@ def get_model_data(filepath):
 def save_image(image, save_dir, name, mean=None):
     if mean:
         image = unprocess_image(image, mean)
-    misc.imsave(os.path.join(save_dir, name + ".png"), image)
+    # misc.imsave(os.path.join(save_dir, name + ".png"), image)
+    imwrite(os.path.join(save_dir, name + ".png"), image)
 
 def get_variable(weights, name):
-    # init = tf.constant_initializer(weights, dtype=tf.float32)
-    init = tf.contrib.layers.xavier_initializer()
+    init = tf.constant_initializer(weights, dtype=tf.float32)
+    # init = tf.contrib.layers.xavier_initializer()
     var = tf.get_variable(name=name, initializer=init,  shape=weights.shape)
     return var
 
 
 def weight_variable(shape, stddev=0.02, name=None):
+    # print(shape)
     initial = tf.truncated_normal(shape, stddev=stddev)
     if name is None:
         return tf.Variable(initial)
@@ -88,6 +92,8 @@ def batch_norm(x, n_out, phase_train, scope='bn', decay=0.9, eps=1e-5):
         gamma = tf.get_variable(name='gamma', shape=[n_out], initializer=tf.random_normal_initializer(1.0, 0.02),
                                 trainable=True)
         batch_mean, batch_var = tf.nn.moments(x, [0, 1, 2], name='moments')
+        print(np.shape(beta), np.shape(gamma))
+        print(np.shape(batch_mean), np.shape(batch_var))
         ema = tf.train.ExponentialMovingAverage(decay=decay)
 
         def mean_var_with_update():
@@ -98,7 +104,9 @@ def batch_norm(x, n_out, phase_train, scope='bn', decay=0.9, eps=1e-5):
         mean, var = tf.cond(phase_train,
                             mean_var_with_update,
                             lambda: (ema.average(batch_mean), ema.average(batch_var)))
+        print(np.shape(mean), np.shape(var))
         normed = tf.nn.batch_normalization(x, mean, var, beta, gamma, eps)
+        print(np.shape(normed))
     return normed
 
 
