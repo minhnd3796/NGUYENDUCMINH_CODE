@@ -8,10 +8,10 @@ from os.path import join
 def evaluate_dir(log_dir, epoch_num, acc_logfile, train_or_val_dir):
     match = 0
     num_pix = 0
-    epoch_num = 'epoch_' + epoch_num
+    epoch_num_dir = 'epoch_' + epoch_num
 
-    for image in listdir(join(log_dir, 'inferred_images', epoch_num, train_or_val_dir)):
-        pred = imread(join(log_dir, 'inferred_images', epoch_num, train_or_val_dir, image))
+    for image in listdir(join(log_dir, 'inferred_images', epoch_num_dir, train_or_val_dir)):
+        pred = imread(join(log_dir, 'inferred_images', epoch_num_dir, train_or_val_dir, image))
         annotation = imread(join('../ISPRS_semantic_labeling_Vaihingen/gts_for_participants/', image))
         height = np.shape(pred)[0]
         width = np.shape(annotation)[1]
@@ -21,8 +21,8 @@ def evaluate_dir(log_dir, epoch_num, acc_logfile, train_or_val_dir):
             for j in range(width):
                 if np.array_equal(pred[i,j,:], annotation[i,j,:]):
                     match += 1
-        with open(join(log_dir, acc_logfile), 'a') as f:
-            f.write(str(match / num_pix) + '\n')
+    with open(join(log_dir, acc_logfile), 'a') as f:
+        f.write(epoch_num + ',' + str(match / num_pix) + '\n')
 
 if __name__ == '__main__':
     if argv[2] == 'val':

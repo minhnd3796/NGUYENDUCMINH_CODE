@@ -13,10 +13,11 @@ import tensor_utils_5_channels as utils
 
 from infer_imagenet_resnet_101_5chan import resnet101_net
 from sys import argv
+from os.path import join
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "33", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
+tf.flags.DEFINE_string("logs_dir", "../logs-resnet101_5channels/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
 tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat",
@@ -125,7 +126,9 @@ def build_session(cuda_device):
     train_op = train(loss, trainable_var)
     print("Setting up summary op...")
     summary_op = tf.summary.merge_all()
+
     sess = tf.Session()
+    
     print("Setting up Saver...")
     saver = tf.train.Saver()
     train_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/train', sess.graph)
@@ -135,10 +138,10 @@ def build_session(cuda_device):
     if ckpt and ckpt.model_checkpoint_path:
         saver.restore(sess, ckpt.model_checkpoint_path)
         print("Model restored...")
-    return image, logits, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, train_writer, validation_writer, saver
+    return image, logits, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, train_writer, validation_writer, pred_annotation
 
 def main(argv=None):
-    image, logits, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, train_writer, validation_writer, saver = build_session(argv[1])
+    image, logits, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, train_writer, validation_writer, pred_annotation = build_session(argv[1])
     
     print("Setting up image reader...")
     train_records, valid_records = reader.read_dataset(FLAGS.data_dir)
@@ -178,7 +181,11 @@ def main(argv=None):
     train_op = train(loss, trainable_var)
     print("Setting up summary op...")
     summary_op = tf.summary.merge_all()
-    sess = tf.Session()
+
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    sess = tf.Session(config=config)
+
     print("Setting up Saver...")
     saver = tf.train.Saver()
     train_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/train', sess.graph)
@@ -191,29 +198,31 @@ def main(argv=None):
 
     if FLAGS.mode == "train":
         for itr in xrange(MAX_ITERATION):
-            train_images, train_annotations, is_new_epoch = train_dataset_reader.next_batch(FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir)
-            if is_new_epoch:
-                sess.close()
-                tf.reset_default_graph()
-                image, logits, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, train_writer, validation_writer, saver = build_session(argv[1])
+            train_images, train_annotations = train_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir)
             feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 0.75}
             sess.run(train_op, feed_dict=feed_dict)
-            
+
             if itr % 50 == 0:
-            # if itr % 2 == 0:
                 train_loss, train_acc, summary_loss, summary_acc = sess.run([loss, acc, loss_summary, acc_summary], feed_dict=feed_dict)
                 print("Step: %d, Train_loss: %g, Train_acc: %g" % (itr, train_loss, train_acc))
+                with open(join(FLAGS.logs_dir, 'iter_train_loss.csv'), 'a') as f:
+                    f.write(str(itr) + ',' + str(train_loss) + '\n')
+                with open(join(FLAGS.logs_dir, 'iter_train_acc.csv'), 'a') as f:
+                    f.write(str(itr) + ',' + str(train_acc) + '\n')
                 train_writer.add_summary(summary_loss, itr)
                 train_writer.add_summary(summary_acc, itr)
-            if itr % 150 == 0:
-                valid_images, valid_annotations, _ = validation_dataset_reader.next_batch(FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir, True)
+            if itr % 600 == 0:
+                valid_images, valid_annotations = validation_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir, True)
                 valid_loss, valid_acc, summary_loss, summary_acc = sess.run([loss, acc, loss_summary, acc_summary],
                                                 feed_dict={image: valid_images, annotation: valid_annotations,
                                                             keep_probability: 1.0})
                 validation_writer.add_summary(summary_loss, itr)
                 validation_writer.add_summary(summary_acc, itr)
-                print("%s ---> Validation_loss: %g , Validation Accuracy: %g" % (
-                    datetime.datetime.now(), valid_loss, valid_acc))
+                print("%s ---> Validation_loss: %g , Validation Accuracy: %g" % (datetime.datetime.now(), valid_loss, valid_acc))
+                with open(join(FLAGS.logs_dir, 'iter_val_loss.csv'), 'a') as f:
+                    f.write(str(itr) + ',' + str(valid_loss) + '\n')
+                with open(join(FLAGS.logs_dir, 'iter_val_acc.csv'), 'a') as f:
+                    f.write(str(itr) + ',' + str(valid_acc) + '\n')
                 saver.save(sess, FLAGS.logs_dir + "model.ckpt", itr)
     elif FLAGS.mode == "visualize":
         valid_images, valid_annotations = validation_dataset_reader.get_random_batch(FLAGS.batch_size)

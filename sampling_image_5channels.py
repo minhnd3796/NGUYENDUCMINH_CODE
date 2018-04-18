@@ -1,25 +1,25 @@
 from cv2 import imread, imwrite
-from os.path import join, splitext
+from os.path import join, splitext, exists
 from os import listdir, mkdir
-from os.path import exists
 import numpy as np
 # from scipy.misc import imread, imsave
 
-base_dir_train = "../ISPRS_semantic_labeling_Vaihingen/train_5channels.bak"
-# base_dir_train = "../ISPRS_semantic_labeling_Vaihingen/train_5channels_resnet101"
-base_dir_tiny_train = "../ISPRS_semantic_labeling_Vaihingen/tiny_train_5channels"
-base_dir_validate = "../ISPRS_semantic_labeling_Vaihingen/validate_5channels.bak"
-base_dir_annotations = "../ISPRS_semantic_labeling_Vaihingen/annotations"
+base_dir_train = "../ISPRS_semantic_labeling_Vaihingen/train_5channels_submission"
+base_dir_validate = "../ISPRS_semantic_labeling_Vaihingen/validate_5channels_submission"
+base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validate_gt_5channels_submission"
+
 base_dir_top = "../ISPRS_semantic_labeling_Vaihingen/top"
 base_dir_ndsm = "../ISPRS_semantic_labeling_Vaihingen/ndsm"
 base_dir_dsm = "../ISPRS_semantic_labeling_Vaihingen/dsm"
+base_dir_annotations = "../ISPRS_semantic_labeling_Vaihingen/annotations"
+
+base_dir_tiny_train = "../ISPRS_semantic_labeling_Vaihingen/tiny_train_5channels"
 base_dir_tiny_train_gt = "../ISPRS_semantic_labeling_Vaihingen/tiny_train_gt_5channels"
-base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validate_gt_5channels.bak"
-# base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Vaihingen/train_validate_gt_5channels_resnet101"
+
 image_size = 224
 num_cropping_per_image = 3333
-validate_image = ["top_mosaic_09cm_area7.png","top_mosaic_09cm_area17.png","top_mosaic_09cm_area23.png","top_mosaic_09cm_area37.png"]
-#validate_image = []
+# validate_image = ["top_mosaic_09cm_area7.png","top_mosaic_09cm_area17.png","top_mosaic_09cm_area23.png","top_mosaic_09cm_area37.png"]
+validate_image = []
 
 def create_training_dataset():
     if not exists(base_dir_train):
@@ -52,10 +52,16 @@ def create_training_dataset():
             dsm_image_cropped = dsm_image[x:x + image_size, y:y + image_size]
             dsm_image_cropped = np.expand_dims(dsm_image_cropped, axis = 2)
             array_to_save = np.concatenate((top_image_cropped,ndsm_image_cropped,dsm_image_cropped), axis=2).astype(dtype=np.float16)
-            np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(i) + ".npy"), array_to_save)
+            np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(4 * i) + ".npy"), array_to_save)
+            np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(4 * i + 1) + ".npy"), np.fliplr(array_to_save))
+            np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(4 * i + 2) + ".npy"), np.flipud(array_to_save))
+            np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(4 * i + 3) + ".npy"), np.flipud(np.fliplr(array_to_save)))
             #imsave(join(base_dir_train, splitext(filename)[0] + "_" + str(i) + ".tif"), top_image_cropped)
             annotation_image_cropped = annotation_image[x:x + image_size, y:y + image_size]
-            imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(i) + ".png"), annotation_image_cropped)
+            imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(4 * i) + ".png"), annotation_image_cropped)
+            imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(4 * i + 1) + ".png"), np.fliplr(annotation_image_cropped))
+            imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(4 * i + 2) + ".png"), np.flipud(annotation_image_cropped))
+            imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(4 * i + 3) + ".png"), np.flipud(np.fliplr(annotation_image_cropped)))
     return None
 
 
