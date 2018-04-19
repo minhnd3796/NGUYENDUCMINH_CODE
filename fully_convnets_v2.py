@@ -5,17 +5,17 @@ import numpy as np
 import tensorflow as tf
 from six.moves import xrange
 
-import Batch_manager_5channels as dataset
-import data_reader_5channels as reader
-import tensor_utils_5_channels as utils
+import Batch_manager as dataset
+import data_reader as reader
+import tensor_utils as utils
 
 from sys import argv
 from os.path import join
 from batch_eval_top import eval_dir
 
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer("batch_size", "33", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "../logs-vgg19_5channels/", "path to logs directory")
+tf.flags.DEFINE_integer("batch_size", "11", "batch size for training")
+tf.flags.DEFINE_string("logs_dir", "../logs-vgg19_3channels_v2/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
 tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat",
@@ -25,14 +25,12 @@ tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
 
 MODEL_URL = 'http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat'
 
-# MAX_ITERATION = int(1e6 + 1)
-MAX_ITERATION = int(121200 + 1) # 25 epochs with 16 top images
+MAX_ITERATION = int(363600 + 1) # 25 epochs with 12 top images
 NUM_OF_CLASSES = 6
 IMAGE_SIZE = 224
-VALIDATE_IMAGES = ["top_mosaic_09cm_area7.png","top_mosaic_09cm_area17.png","top_mosaic_09cm_area23.png","top_mosaic_09cm_area37.png"]
 
 
-def vgg_net(weights, image):
+def vgg_net(weights, image, encoding_keep_prob):
     layers = (
         'conv1_1', 'relu1_1', 'conv1_2', 'relu1_2', 'pool1',
 
@@ -56,18 +54,12 @@ def vgg_net(weights, image):
             kernels, bias = weights[i][0][0][0][0]
             # matconvnet: weights are [width, height, in_channels, out_channels]
             # tensorflow: weights are [height, width, in_channels, out_channels]
-            if name == 'conv1_1':
-                np.random.seed(3796)
-                append_channels= np.random.normal(loc=0,scale=0.02,size=(3,3,2,64))
-                # print(append_channels)
-                kernels = np.concatenate((kernels, append_channels), axis=2)
-                kernels = utils.get_variable(kernels, name=name + "_w")
-            else:
-                kernels = utils.get_variable(kernels, name=name + "_w")
+            kernels = utils.get_variable(kernels, name=name + "_w")
             bias = utils.get_variable(bias.reshape(-1), name=name + "_b")
             current = utils.conv2d_basic(current, kernels, bias)
         elif kind == 'relu':
             current = tf.nn.relu(current, name=name)
+            current = tf.nn.dropout(current, keep_prob=encoding_keep_prob)
             if FLAGS.debug:
                 utils.add_activation_summary(current)
         elif kind == 'pool':
@@ -77,7 +69,7 @@ def vgg_net(weights, image):
     return net
 
 
-def inference(image, keep_prob):
+def inference(image, keep_prob, encoding_keep_prob):
     """
     Semantic segmentation network definition
     :param image: input image. Should have values in range 0-255
@@ -87,16 +79,14 @@ def inference(image, keep_prob):
     print("setting up vgg pretrained conv layers ...")
     model_data = utils.get_model_data(FLAGS.model_dir)
 
-    mean = model_data['normalization'][0][0][0]
-    mean_pixel = np.mean(mean, axis=(0, 1))
-    mean_pixel = np.append(mean_pixel, [30.69861307993539, 284.9702])
-    # mean_pixel = np.array([120.8952399852595, 81.93008162338278, 81.28988761879855, 30.69861307993539, 284.9702])
+    mean_pixel = model_data['normalization'][0][0][0]
+    
     weights = np.squeeze(model_data['layers'])
 
     processed_image = utils.process_image(image, mean_pixel)
 
     with tf.variable_scope("inference"):
-        image_net = vgg_net(weights, processed_image)
+        image_net = vgg_net(weights, processed_image, encoding_keep_prob)
         conv_final_layer = image_net["conv5_3"]
 
         pool5 = utils.max_pool_2x2(conv_final_layer)
@@ -157,10 +147,12 @@ def train(loss_val, var_list):
 
 def build_session(cuda_device):
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
+    weight_decay = 1e-3
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
-    image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 5], name="input_image")
+    encoding_keep_prob = tf.placeholder(tf.float32, name="encoding_keep_prob")
+    image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 3], name="input_image")
     annotation = tf.placeholder(tf.int32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 1], name="annotation")
-    pred_annotation, logits = inference(image, keep_probability)
+    pred_annotation, logits = inference(image, keep_probability, encoding_keep_prob)
     annotation_64 = tf.cast(annotation, dtype=tf.int64)
     # calculate accuracy for batch.
     cal_acc = tf.equal(pred_annotation, annotation_64)
@@ -169,11 +161,14 @@ def build_session(cuda_device):
     tf.summary.image("input_image", image, max_outputs=2)
     tf.summary.image("ground_truth", tf.cast(annotation, tf.uint8), max_outputs=2)
     tf.summary.image("pred_annotation", tf.cast(pred_annotation, tf.uint8), max_outputs=2)
-    loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits,
+    l2_loss = tf.add_n([tf.nn.l2_loss(var) for var in tf.trainable_variables()])
+    cross_entropy = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits,
                                                                           labels=tf.squeeze(annotation,
                                                                                             squeeze_dims=[3]),
                                                                           name="entropy")))
-    loss_summary = tf.summary.scalar("entropy", loss)
+    loss = weight_decay * l2_loss + cross_entropy
+    
+    loss_summary = tf.summary.scalar("entropy_with_l2", loss)
     # summary accuracy in tensorboard
     acc_summary = tf.summary.scalar("accuracy", acc)
     trainable_var = tf.trainable_variables()
@@ -195,13 +190,14 @@ def build_session(cuda_device):
     if ckpt and ckpt.model_checkpoint_path:
         saver.restore(sess, ckpt.model_checkpoint_path)
         print("Model restored...")
-    return image, logits, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation, train_writer, validation_writer
+    return image, logits, keep_probability, encoding_keep_prob, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, train_writer, validation_writer, pred_annotation
 
 def main(argv=None):
-    image, logits, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation, train_writer, validation_writer = build_session(argv[1])
+    np.random.seed(3796)
+    image, logits, keep_probability, encoding_keep_prob, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, train_writer, validation_writer, pred_annotation = build_session(argv[1])
 
     print("Setting up image reader...")
-    train_records, valid_records = reader.read_dataset(FLAGS.data_dir)
+    train_records, valid_records = reader.read_dataset_test(FLAGS.data_dir)
     print(len(train_records))
     print(len(valid_records))
 
@@ -256,8 +252,8 @@ def main(argv=None):
     
     if FLAGS.mode == "train":
         for itr in xrange(MAX_ITERATION):
-            train_images, train_annotations = train_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir)
-            feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 0.75}
+            train_images, train_annotations = train_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir, encoding_keep_prob=encoding_keep_prob)
+            feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 0.5, encoding_keep_prob: 0.85}
             sess.run(train_op, feed_dict=feed_dict)
 
             if itr % 50 == 0:
@@ -270,8 +266,8 @@ def main(argv=None):
                 train_writer.add_summary(summary_loss, itr)
                 train_writer.add_summary(summary_acc, itr)
             if itr % 600 == 0:
-                valid_images, valid_annotations = validation_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir, True)
-                valid_loss, valid_acc, summary_loss, summary_acc = sess.run([loss, acc, loss_summary, acc_summary], feed_dict={image: valid_images, annotation: valid_annotations, keep_probability: 1.0})
+                valid_images, valid_annotations = validation_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir, is_validation=True, encoding_keep_prob=encoding_keep_prob)
+                valid_loss, valid_acc, summary_loss, summary_acc = sess.run([loss, acc, loss_summary, acc_summary], feed_dict={image: valid_images, annotation: valid_annotations, keep_probability: 1.0, encoding_keep_prob: 1.0})
                 validation_writer.add_summary(summary_loss, itr)
                 validation_writer.add_summary(summary_acc, itr)
                 print("%s ---> Validation_loss: %g , Validation Accuracy: %g" % (datetime.datetime.now(), valid_loss, valid_acc))
@@ -283,7 +279,7 @@ def main(argv=None):
     elif FLAGS.mode == "visualize":
         valid_images, valid_annotations = validation_dataset_reader.get_random_batch(FLAGS.batch_size)
         pred = sess.run(pred_annotation, feed_dict={image: valid_images, annotation: valid_annotations,
-                                                    keep_probability: 1.0})
+                                                    keep_probability: 1.0, encoding_keep_prob: 1.0})
         valid_annotations = np.squeeze(valid_annotations, axis=3)
         pred = np.squeeze(pred, axis=3)
 

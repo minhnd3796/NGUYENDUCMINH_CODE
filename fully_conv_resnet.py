@@ -10,6 +10,7 @@ import tensor_utils as utils
 from infer_imagenet_resnet_101 import resnet101_net
 from sys import argv
 from os.path import join
+from batch_eval_top import eval_dir
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "33", "batch size for training")
@@ -24,7 +25,7 @@ tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
 MODEL_URL = 'http://www.vlfeat.org/matconvnet/models/imagenet-resnet-101-dag.mat'
 
 # MAX_ITERATION = int(1e6 + 1)
-MAX_ITERATION = int(121200) # 100 epochs
+MAX_ITERATION = int(121200 + 1) # 25 epochs
 NUM_OF_CLASSES = 6
 IMAGE_SIZE = 224
 
@@ -182,7 +183,7 @@ def main(argv=None):
         print("Model restored...") """
 
     if FLAGS.mode == "train":
-        for itr in xrange(MAX_ITERATION):
+        for itr in xrange(120601, MAX_ITERATION):
             train_images, train_annotations = train_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir)
             feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 0.75}
             sess.run(train_op, feed_dict=feed_dict)
@@ -209,6 +210,7 @@ def main(argv=None):
                 with open(join(FLAGS.logs_dir, 'iter_val_acc.csv'), 'a') as f:
                     f.write(str(itr) + ',' + str(valid_acc) + '\n')
                 saver.save(sess, FLAGS.logs_dir + "model.ckpt", itr)
+
     elif FLAGS.mode == "visualize":
         valid_images, valid_annotations = validation_dataset_reader.get_random_batch(FLAGS.batch_size)
         pred = sess.run(pred_annotation, feed_dict={image: valid_images, annotation: valid_annotations,

@@ -28,7 +28,7 @@ tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
 MODEL_URL = 'http://www.vlfeat.org/matconvnet/models/imagenet-resnet-101-dag.mat'
 
 # MAX_ITERATION = int(1e6 + 1)
-MAX_ITERATION = int(121200) # 100 epochs
+MAX_ITERATION = int(121200 + 1) # 100 epochs
 NUM_OF_CLASSES = 6
 IMAGE_SIZE = 224
 
@@ -131,17 +131,17 @@ def build_session(cuda_device):
     
     print("Setting up Saver...")
     saver = tf.train.Saver()
-    train_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/train', sess.graph)
-    validation_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/validation')
+    # train_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/train', sess.graph)
+    # validation_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/validation')
     sess.run(tf.global_variables_initializer())
     ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
     if ckpt and ckpt.model_checkpoint_path:
         saver.restore(sess, ckpt.model_checkpoint_path)
         print("Model restored...")
-    return image, logits, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, train_writer, validation_writer, pred_annotation
+    return image, logits, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation
 
 def main(argv=None):
-    image, logits, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, train_writer, validation_writer, pred_annotation = build_session(argv[1])
+    image, logits, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation = build_session(argv[1])
     
     print("Setting up image reader...")
     train_records, valid_records = reader.read_dataset(FLAGS.data_dir)
@@ -197,7 +197,7 @@ def main(argv=None):
         print("Model restored...") """
 
     if FLAGS.mode == "train":
-        for itr in xrange(MAX_ITERATION):
+        for itr in xrange(MAX_ITERATION): # Just for resume from being killed
             train_images, train_annotations = train_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir)
             feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 0.75}
             sess.run(train_op, feed_dict=feed_dict)
@@ -209,15 +209,15 @@ def main(argv=None):
                     f.write(str(itr) + ',' + str(train_loss) + '\n')
                 with open(join(FLAGS.logs_dir, 'iter_train_acc.csv'), 'a') as f:
                     f.write(str(itr) + ',' + str(train_acc) + '\n')
-                train_writer.add_summary(summary_loss, itr)
-                train_writer.add_summary(summary_acc, itr)
+                # train_writer.add_summary(summary_loss, itr)
+                # train_writer.add_summary(summary_acc, itr)
             if itr % 600 == 0:
                 valid_images, valid_annotations = validation_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir, True)
                 valid_loss, valid_acc, summary_loss, summary_acc = sess.run([loss, acc, loss_summary, acc_summary],
                                                 feed_dict={image: valid_images, annotation: valid_annotations,
                                                             keep_probability: 1.0})
-                validation_writer.add_summary(summary_loss, itr)
-                validation_writer.add_summary(summary_acc, itr)
+                # validation_writer.add_summary(summary_loss, itr)
+                # validation_writer.add_summary(summary_acc, itr)
                 print("%s ---> Validation_loss: %g , Validation Accuracy: %g" % (datetime.datetime.now(), valid_loss, valid_acc))
                 with open(join(FLAGS.logs_dir, 'iter_val_loss.csv'), 'a') as f:
                     f.write(str(itr) + ',' + str(valid_loss) + '\n')
@@ -239,7 +239,6 @@ def main(argv=None):
             print(pred[itr].astype(np.uint8).shape)
             utils.save_image(pred[itr].astype(np.uint8), FLAGS.logs_dir, name="pred_" + str(itr))
             print("Saved image: %d" % itr)
-
 
 if __name__ == "__main__":
     tf.app.run()
