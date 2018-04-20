@@ -197,7 +197,7 @@ def main(argv=None):
     image, logits, keep_probability, encoding_keep_prob, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, train_writer, validation_writer, pred_annotation = build_session(argv[1])
 
     print("Setting up image reader...")
-    train_records, valid_records = reader.read_dataset_test(FLAGS.data_dir)
+    train_records, valid_records = reader.read_dataset(FLAGS.data_dir)
     print(len(train_records))
     print(len(valid_records))
 
@@ -254,6 +254,7 @@ def main(argv=None):
         for itr in xrange(MAX_ITERATION):
             train_images, train_annotations = train_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir, encoding_keep_prob=encoding_keep_prob)
             feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 0.5, encoding_keep_prob: 0.85}
+            tf.set_random_seed(3796 + itr) # get deterministicly random dropouts
             sess.run(train_op, feed_dict=feed_dict)
 
             if itr % 50 == 0:

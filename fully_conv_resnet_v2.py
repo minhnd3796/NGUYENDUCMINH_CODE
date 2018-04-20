@@ -16,7 +16,7 @@ FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "11", "batch size for training")
 tf.flags.DEFINE_string("logs_dir", "../logs-resnet101_3channels_v2/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
-tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
+tf.flags.DEFINE_float("learning_rate", "1e-5", "Learning rate for Adam Optimizer")
 tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat",
                      "Path to model mat")
 tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
@@ -86,7 +86,7 @@ def train(loss_val, var_list):
 
 def build_session(cuda_device):
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
-    weight_decay = 1e-4
+    
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 3], name="input_image")
     annotation = tf.placeholder(tf.int32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 1], name="annotation")
@@ -99,14 +99,16 @@ def build_session(cuda_device):
     tf.summary.image("input_image", image, max_outputs=2)
     tf.summary.image("ground_truth", tf.cast(annotation, tf.uint8), max_outputs=2)
     tf.summary.image("pred_annotation", tf.cast(pred_annotation, tf.uint8), max_outputs=2)
-    l2_loss = tf.add_n([tf.nn.l2_loss(var) for var in tf.trainable_variables()])
-    cross_entropy = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits,
-                                                                          labels=tf.squeeze(annotation,
-                                                                                            squeeze_dims=[3]),
-                                                                          name="entropy")))
-    loss = weight_decay * l2_loss + cross_entropy
     
+    l2_loss = tf.add_n([tf.nn.l2_loss(var) for var in tf.trainable_variables()])
+    cross_entropy = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=tf.squeeze(annotation, squeeze_dims=[3]), name="entropy")))
+    weight_decay = 1e-8
+    loss = weight_decay * l2_loss + cross_entropy
     loss_summary = tf.summary.scalar("entropy_with_l2", loss)
+
+    """ loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=tf.squeeze(annotation, squeeze_dims=[3]), name="entropy")))
+    loss_summary = tf.summary.scalar("entropy", loss) """
+    
     # summary accuracy in tensorboard
     acc_summary = tf.summary.scalar("accuracy", acc)
     trainable_var = tf.trainable_variables()
@@ -135,7 +137,7 @@ def main(argv=None):
     image, logits, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation, train_writer, validation_writer = build_session(argv[1])
     
     print("Setting up image reader...")
-    train_records, valid_records = reader.read_dataset_test(FLAGS.data_dir)
+    train_records, valid_records = reader.read_dataset(FLAGS.data_dir)
     print(len(train_records))
     print(len(valid_records))
 
@@ -191,6 +193,7 @@ def main(argv=None):
         for itr in xrange(MAX_ITERATION):
             train_images, train_annotations = train_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir)
             feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 0.85}
+            tf.set_random_seed(3796 + itr) # get deterministicly random dropouts
             sess.run(train_op, feed_dict=feed_dict)
 
             if itr % 50 == 0:
