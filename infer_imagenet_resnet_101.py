@@ -1,4 +1,4 @@
-import os
+from os import environ
 
 from sys import argv
 import tensor_utils as utils
@@ -186,7 +186,7 @@ def inference(x, weights):
     return prediction, image_net
 
 def main(argv=None):
-    os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+    environ["CUDA_VISIBLE_DEVICES"] = argv[2]
     resnet101_net = utils.get_model_data('../pretrained_models/imagenet-resnet-101-dag.mat')
     weights = np.squeeze(resnet101_net['params'])
 
@@ -203,6 +203,10 @@ def main(argv=None):
                                feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)})
     print('Category:', resnet101_net['meta'][0][0][1][0][0][1][0][category][0])
     print('Score:', score)
+
+    for var in tf.trainable_variables():
+        if (var.op.name.find(r'filter')) > 0:
+            print(var.op.name)
 
     # shape = sess.run(image_net['res5c_relu'], feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)}).shape
     # print(shape)

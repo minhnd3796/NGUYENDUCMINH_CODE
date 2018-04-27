@@ -1,7 +1,9 @@
 from cv2 import imread, imwrite
 import numpy as np
-from os.path import join
+from os.path import join, exists
+from os import mkdir
 from sys import argv
+from PIL import Image
 
 def create_patch_batch_list(filename,
                             batch_size,
@@ -136,15 +138,15 @@ def eval_dir(input_tensor,
              horizontal_stride=112,
              is_validation=True):
     if is_validation:
-        # filename = ['top_mosaic_09cm_area7', 'top_mosaic_09cm_area17', 'top_mosaic_09cm_area23', 'top_mosaic_09cm_area37']
-        filename = ['top_mosaic_09cm_area7']
+        filename = ['top_mosaic_09cm_area7', 'top_mosaic_09cm_area17', 'top_mosaic_09cm_area23', 'top_mosaic_09cm_area37']
+        # filename = ['top_mosaic_09cm_area7']
         acc_logfile = 'epoch_val_acc.csv'
     else:
-        filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3']
-        """ filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
+        # filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3']
+        filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
                     'top_mosaic_09cm_area11', 'top_mosaic_09cm_area13', 'top_mosaic_09cm_area15',
                     'top_mosaic_09cm_area21', 'top_mosaic_09cm_area26', 'top_mosaic_09cm_area28',
-                    'top_mosaic_09cm_area30', 'top_mosaic_09cm_area32', 'top_mosaic_09cm_area34'] """
+                    'top_mosaic_09cm_area30', 'top_mosaic_09cm_area32', 'top_mosaic_09cm_area34']
 
         # For submission only
         """ filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
@@ -217,50 +219,54 @@ def get_patches(image_name, patch_size=224, vertical_stride=112, horizontal_stri
     num_patches += 1
     return input_patch, gt_patch, coordinate, num_patches
 
-if __name__ == '__main__':
-    filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
-                'top_mosaic_09cm_area11', 'top_mosaic_09cm_area13', 'top_mosaic_09cm_area15',
-                'top_mosaic_09cm_area21', 'top_mosaic_09cm_area26', 'top_mosaic_09cm_area28',
-                'top_mosaic_09cm_area30', 'top_mosaic_09cm_area32', 'top_mosaic_09cm_area34',
-                'top_mosaic_09cm_area7', 'top_mosaic_09cm_area17', 'top_mosaic_09cm_area23',
-                'top_mosaic_09cm_area37']
-    batch_size = int(argv[1])
+def infer_submission(input_tensor,
+             logits,
+             keep_probability,
+             sess,
+             batch_size,
+             log_dir,
+             encoding_keep_prob=None,
+             num_channels=3,
+             patch_size=224,
+             vertical_stride=112,
+             horizontal_stride=112):
+    filename = ['top_mosaic_09cm_area2', 'top_mosaic_09cm_area4', 'top_mosaic_09cm_area6',
+                'top_mosaic_09cm_area8', 'top_mosaic_09cm_area10', 'top_mosaic_09cm_area12',
+                'top_mosaic_09cm_area14', 'top_mosaic_09cm_area16', 'top_mosaic_09cm_area20',
+                'top_mosaic_09cm_area22', 'top_mosaic_09cm_area24', 'top_mosaic_09cm_area27',
+                'top_mosaic_09cm_area29', 'top_mosaic_09cm_area31', 'top_mosaic_09cm_area33',
+                'top_mosaic_09cm_area35', 'top_mosaic_09cm_area38']
+    # 2,4,6,8,10,12,14,16,20,22,24,27,29,31,33,35,38
     for fn in filename:
-        input_batch_list, coordinate_batch_list, _, _ = \
-            create_patch_batch_list(fn, batch_size)
-        input_patch, gt_patch, coordinate, num_patches = get_patches(fn)
+        print(">> Inferring:", fn)
+        input_batch_list, coordinate_batch_list, height, width = create_patch_batch_list(fn, batch_size, num_channels=num_channels)
+        pred_annotation_map = batch_inference(input_tensor, logits, keep_probability, encoding_keep_prob, sess, input_batch_list, coordinate_batch_list, height, width)
+        height = pred_annotation_map.shape[0]
+        width = pred_annotation_map.shape[1]
+        output_image = np.zeros((height, width, 3), dtype=np.uint8)
+        for i in range(height):
+            for j in range(width):
+                if pred_annotation_map[i,j]==0:
+                    output_image[i,j]=np.array([255,255,255])
+                elif pred_annotation_map[i,j]==1:
+                    output_image[i,j]=np.array([0,0,255])
+                elif pred_annotation_map[i,j]==2:
+                    output_image[i,j]=np.array([0,255,255])
+                elif pred_annotation_map[i,j]==3:
+                    output_image[i,j]=np.array([0,255,0])
+                elif pred_annotation_map[i,j]==4:
+                    output_image[i,j]=np.array([255,255,0])
+                elif pred_annotation_map[i,j]==5:
+                    output_image[i,j]=np.array([255,0,0])
+        # imwrite(log_dir + 'submission/' + image_name + '.tif', output_image)
+        if not exists(join(log_dir, 'submission_cv2')):
+            mkdir(join(log_dir, 'submission_cv2'))
+        if not exists(join(log_dir, 'submission_PIL')):
+            mkdir(join(log_dir, 'submission_PIL'))
+        im = Image.fromarray(output_image)
+        b, g, r = im.split()
+        im = Image.merge("RGB", (r, g, b))
+        im.save(join(log_dir, 'submission_PIL', fn + '.tif'))
+        imwrite(join(log_dir, 'submission_cv2', fn + '.tif'), output_image)
 
-        global_i = 0
-        input_diff = [None] * len(input_patch)
-        y_diff = [None] * len(input_patch)
-        x_diff = [None] * len(input_patch)
-        
-
-        for i in range(len(input_batch_list)):
-            for j in range(batch_size):
-                input_diff[global_i] = np.sum(input_patch[global_i] - input_batch_list[i][j])
-                y_diff[global_i] = coordinate[global_i][0] - coordinate_batch_list[i][j][0]
-                x_diff[global_i] = coordinate[global_i][1] - coordinate_batch_list[i][j][1]
-                global_i += 1
-                if global_i == len(input_patch):
-                    global_i -= 1
-                    break
-        print(fn)
-        print("Input diff:", sum(input_diff))
-        print('x diff:', sum(x_diff))
-        print('y diff:', sum(y_diff))
-
-        input_diff = []
-        gtt_diff = []
-        x_diff = []
-        y_diff = []
-        last = j
-        
-        for j in range(last, batch_size):
-            input_diff.append(np.sum(input_patch[global_i] - input_batch_list[i][j]))
-            y_diff.append(coordinate[global_i][0] - coordinate_batch_list[i][j][0])
-            x_diff.append(coordinate[global_i][1] - coordinate_batch_list[i][j][1])
-        print("Last Input diff:", sum(input_diff))
-        print('last x diff:', sum(x_diff))
-        print('last y diff:', sum(y_diff))
-        print()
+        # imsave(join(log_dir, 'submission', fn + '.tif'), output_image)

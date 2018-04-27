@@ -4,7 +4,8 @@ argv[2]: id of GPU
 '''
 
 from __future__ import print_function
-import os
+from os import mkdir, environ
+from os.path import exists
 import numpy as np
 import tensorflow as tf
 # from scipy.misc import imread, imsave
@@ -13,7 +14,7 @@ from sys import argv
 
 import tensor_utils_5_channels as utils
 
-from fully_conv_resnet_5_channels import inference as resnet_inference
+from batch_eval_top import infer_submission
 
 FLAGS = tf.flags.FLAGS
 
@@ -203,28 +204,17 @@ def infer_little_img(input_tensor, logits, keep_probability, sess, image_name,pa
 
 if __name__ == "__main__":
     #tf.app.run()
-    os.environ["CUDA_VISIBLE_DEVICES"] = argv[2]
+    environ["CUDA_VISIBLE_DEVICES"] = argv[2]
 
     # tf.flags.DEFINE_integer("batch_size", "1", "batch size for training")
     # tf.flags.DEFINE_string("logs_dir", "../logs-" + argv[1] + "/", "path to logs directory")
     # tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
     # if argv[1] == 'resnet101':
         # tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to vgg model mat")
-    if argv[1] == 'vgg19':
-        tf.flags.DEFINE_string("logs_dir", "../logs-" + argv[1] + "/", "path to logs directory")
-        tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat", "Path to vgg model mat")
-        tf.flags.DEFINE_string("logs_dir", "../logs-vgg19/", "path to logs directory")
-        tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
-        tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
-
-    if argv[3] == 'val':
-        inferred_image = ['top_mosaic_09cm_area7', 'top_mosaic_09cm_area17', 'top_mosaic_09cm_area23',
-                          'top_mosaic_09cm_area37']
-    elif argv[3] == 'train':
-        inferred_image = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
-                          'top_mosaic_09cm_area11', 'top_mosaic_09cm_area13', 'top_mosaic_09cm_area15',
-                          'top_mosaic_09cm_area21', 'top_mosaic_09cm_area26', 'top_mosaic_09cm_area28',
-                          'top_mosaic_09cm_area30', 'top_mosaic_09cm_area32', 'top_mosaic_09cm_area34']
+    tf.flags.DEFINE_string("logs_dir", "../submission_vgg19_5c/", "path to logs directory")
+    tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat", "Path to vgg model mat")
+    tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
+    tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 
     sess = tf.Session()
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
@@ -232,6 +222,7 @@ if __name__ == "__main__":
     if argv[1] == 'vgg19':
         _, logits = inference(input_tensor, keep_probability)
     elif argv[1] == 'resnet101':
+        from fully_conv_resnet_5_channels import inference as resnet_inference
         _, logits = resnet_inference(input_tensor, keep_probability)
     saver = tf.train.Saver()
     sess.run(tf.global_variables_initializer())
@@ -239,11 +230,13 @@ if __name__ == "__main__":
     if ckpt and ckpt.model_checkpoint_path:
         saver.restore(sess, ckpt.model_checkpoint_path)
         print("Model restored...")
+    
+    infer_submission(input_tensor, logits, keep_probability, sess, 128, FLAGS.logs_dir, num_channels=5)
 
     # imwrite("top_mosaic_09cm_area" + argv[3] + '_' + argv[1] + '.tif',
     #        infer_little_img("../ISPRS_semantic_labeling_Vaihingen/top/" + "top_mosaic_09cm_area" + argv[3] + ".tif"))
-    for image_name in inferred_image:
-        infer_little_img(input_tensor, logits, keep_probability, sess, image_name)
+    """ for image_name in inferred_image:
+        infer_little_img(input_tensor, logits, keep_probability, sess, image_name) """
 
 # 2
 # 4

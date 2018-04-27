@@ -1,4 +1,4 @@
-import os
+from os import environ
 from sys import argv
 import tensor_utils as utils
 import numpy as np
@@ -35,7 +35,7 @@ def vgg_net(weights, image):
             # matconvnet: weights are [width, height, in_channels, out_channels]
             # tensorflow: weights are [height, width, in_channels, out_channels]
             # kernels = utils.get_variable(np.transpose(kernels, (0, 1, 2, 3)), name=name + "_w")
-            kernels = utils.get_variable(kernels, name=name + "_w")
+            kernels = utils.get_variable(kernels, name=name + "_W")
             bias = utils.get_variable(bias.reshape(-1), name=name + "_b")
             if kind == 'conv':
                 current = utils.conv2d_basic(current, kernels, bias)
@@ -59,7 +59,7 @@ def inference(x, weights):
 
 def main(argv=None):
     img = imread(argv[1])
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    environ["CUDA_VISIBLE_DEVICES"] = argv[2]
     # tmp = loadmat('im_.mat')
 
     vgg19_net = utils.get_model_data('../pretrained_models/imagenet-vgg-verydeep-19.mat')
@@ -78,6 +78,10 @@ def main(argv=None):
     print('Category:', vgg19_net['classes'][0][0][1][0][category][0])
     print('Score:', score)
     print(sess.run(image_net['pool3'], feed_dict={x:normalised_img[np.newaxis, :, :, :].astype(np.float32)}).shape)
+
+    for var in tf.trainable_variables():
+        if var.op.name.find(r'w') > 0 or var.op.name.find(r'W') > 0:
+            print(var.op.name)
 
 if __name__ == "__main__":
     tf.app.run()

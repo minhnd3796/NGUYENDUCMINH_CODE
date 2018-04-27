@@ -13,10 +13,10 @@ from os.path import join
 from batch_eval_top import eval_dir
 
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer("batch_size", "11", "batch size for training")
+tf.flags.DEFINE_integer("batch_size", "33", "batch size for training")
 tf.flags.DEFINE_string("logs_dir", "../logs-resnet101_3channels_v2/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
-tf.flags.DEFINE_float("learning_rate", "1e-5", "Learning rate for Adam Optimizer")
+tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
 tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat",
                      "Path to model mat")
 tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
@@ -25,7 +25,7 @@ tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
 MODEL_URL = 'http://www.vlfeat.org/matconvnet/models/imagenet-resnet-101-dag.mat'
 
 # MAX_ITERATION = int(1e6 + 1)
-MAX_ITERATION = int(363600 + 1) # 25 epochs
+MAX_ITERATION = int(121200 + 1) # 25 epochs
 NUM_OF_CLASSES = 6
 IMAGE_SIZE = 224
 
@@ -84,9 +84,18 @@ def train(loss_val, var_list):
             utils.add_gradient_summary(grad, var)
     return optimizer.apply_gradients(grads)
 
+def _decay(weight_decay):
+    """L2 weight decay loss."""
+    costs = []
+    for var in tf.trainable_variables():
+        if var.op.name.find(r'W') > 0 or var.op.name.find(r'w') > 0 or var.op.name.find(r'filter') > 0:
+            costs.append(tf.nn.l2_loss(var))
+        tf.summary.histogram(var.op.name, var)
+    return tf.multiply(weight_decay, tf.add_n(costs))
+
 def build_session(cuda_device):
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
-    
+
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 3], name="input_image")
     annotation = tf.placeholder(tf.int32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 1], name="annotation")
@@ -99,16 +108,16 @@ def build_session(cuda_device):
     tf.summary.image("input_image", image, max_outputs=2)
     tf.summary.image("ground_truth", tf.cast(annotation, tf.uint8), max_outputs=2)
     tf.summary.image("pred_annotation", tf.cast(pred_annotation, tf.uint8), max_outputs=2)
-    
-    l2_loss = tf.add_n([tf.nn.l2_loss(var) for var in tf.trainable_variables()])
+
+    weight_decay = 1e-4
+    l2_loss = _decay(weight_decay)
     cross_entropy = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=tf.squeeze(annotation, squeeze_dims=[3]), name="entropy")))
-    weight_decay = 1e-8
-    loss = weight_decay * l2_loss + cross_entropy
+    loss = l2_loss + cross_entropy
     loss_summary = tf.summary.scalar("entropy_with_l2", loss)
 
     """ loss = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=tf.squeeze(annotation, squeeze_dims=[3]), name="entropy")))
     loss_summary = tf.summary.scalar("entropy", loss) """
-    
+
     # summary accuracy in tensorboard
     acc_summary = tf.summary.scalar("accuracy", acc)
     trainable_var = tf.trainable_variables()
@@ -118,9 +127,9 @@ def build_session(cuda_device):
     train_op = train(loss, trainable_var)
     print("Setting up summary op...")
     summary_op = tf.summary.merge_all()
-    
+
     sess = tf.Session()
-    
+
     print("Setting up Saver...")
     saver = tf.train.Saver()
     train_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/train', sess.graph)
@@ -135,7 +144,7 @@ def build_session(cuda_device):
 def main(argv=None):
     np.random.seed(3796)
     image, logits, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation, train_writer, validation_writer = build_session(argv[1])
-    
+
     print("Setting up image reader...")
     train_records, valid_records = reader.read_dataset(FLAGS.data_dir)
     print(len(train_records))
@@ -174,7 +183,7 @@ def main(argv=None):
     train_op = train(loss, trainable_var)
     print("Setting up summary op...")
     summary_op = tf.summary.merge_all()
-    
+
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     sess = tf.Session(config=config)
@@ -192,7 +201,7 @@ def main(argv=None):
     if FLAGS.mode == "train":
         for itr in xrange(MAX_ITERATION):
             train_images, train_annotations = train_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir)
-            feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 0.85}
+            feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 1.0}
             tf.set_random_seed(3796 + itr) # get deterministicly random dropouts
             sess.run(train_op, feed_dict=feed_dict)
 

@@ -11,10 +11,10 @@ import tensor_utils as utils
 
 from sys import argv
 from os.path import join
-from batch_eval_top import eval_dir
+from batch_eval_top import eval_dir, _decay
 
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer("batch_size", "11", "batch size for training")
+tf.flags.DEFINE_integer("batch_size", "33", "batch size for training")
 tf.flags.DEFINE_string("logs_dir", "../logs-vgg19_3channels_v2/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
@@ -135,7 +135,6 @@ def inference(image, keep_prob, encoding_keep_prob):
 
     return tf.expand_dims(annotation_pred, dim=3), conv_t3
 
-
 def train(loss_val, var_list):
     optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
     grads = optimizer.compute_gradients(loss_val, var_list=var_list)
@@ -144,6 +143,15 @@ def train(loss_val, var_list):
         for grad, var in grads:
             utils.add_gradient_summary(grad, var)
     return optimizer.apply_gradients(grads)
+
+def _decay(weight_decay):
+    """L2 weight decay loss."""
+    costs = []
+    for var in tf.trainable_variables():
+        if var.op.name.find(r'W') > 0 or var.op.name.find(r'w') > 0 or var.op.name.find(r'filter') > 0:
+            costs.append(tf.nn.l2_loss(var))
+        tf.summary.histogram(var.op.name, var)
+    return tf.multiply(weight_decay, tf.add_n(costs))
 
 def build_session(cuda_device):
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
@@ -161,12 +169,12 @@ def build_session(cuda_device):
     tf.summary.image("input_image", image, max_outputs=2)
     tf.summary.image("ground_truth", tf.cast(annotation, tf.uint8), max_outputs=2)
     tf.summary.image("pred_annotation", tf.cast(pred_annotation, tf.uint8), max_outputs=2)
-    l2_loss = tf.add_n([tf.nn.l2_loss(var) for var in tf.trainable_variables()])
+    l2_loss = _decay(weight_decay)
     cross_entropy = tf.reduce_mean((tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits,
                                                                           labels=tf.squeeze(annotation,
                                                                                             squeeze_dims=[3]),
                                                                           name="entropy")))
-    loss = weight_decay * l2_loss + cross_entropy
+    loss = l2_loss + cross_entropy
     
     loss_summary = tf.summary.scalar("entropy_with_l2", loss)
     # summary accuracy in tensorboard
@@ -253,7 +261,7 @@ def main(argv=None):
     if FLAGS.mode == "train":
         for itr in xrange(MAX_ITERATION):
             train_images, train_annotations = train_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, FLAGS.logs_dir, encoding_keep_prob=encoding_keep_prob)
-            feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 0.5, encoding_keep_prob: 0.85}
+            feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 0.75, encoding_keep_prob: 1.0}
             tf.set_random_seed(3796 + itr) # get deterministicly random dropouts
             sess.run(train_op, feed_dict=feed_dict)
 
