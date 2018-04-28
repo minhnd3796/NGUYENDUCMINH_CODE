@@ -51,7 +51,7 @@ class Batch_manager:
     def reset_batch_offset(self, offset=0):
         self.batch_offset = offset
 
-    def next_batch(self, saver, batch_size, input_tensor, logits, keep_probability, sess, log_dir, encoding_keep_prob=None, is_validation=False):
+    def next_batch(self, saver, batch_size, input_tensor, logits, keep_probability, sess, is_training, log_dir, encoding_keep_prob=None, is_validation=False):
         start = self.batch_offset
         self.batch_offset += batch_size
         np.random.seed(self.seed)
@@ -60,8 +60,8 @@ class Batch_manager:
             self.epochs_completed += 1
             print("****************** Epochs completed: " + str(self.epochs_completed) + "******************")
             if not is_validation:
-                eval_dir(input_tensor, logits, keep_probability, sess, batch_size, log_dir, self.epochs_completed, encoding_keep_prob=encoding_keep_prob, is_validation=False)
-                eval_dir(input_tensor, logits, keep_probability, sess, batch_size, log_dir, self.epochs_completed, encoding_keep_prob=encoding_keep_prob, is_validation=True)
+                eval_dir(input_tensor, logits, keep_probability, sess, is_training, batch_size, log_dir, self.epochs_completed, encoding_keep_prob=encoding_keep_prob, is_validation=False)
+                eval_dir(input_tensor, logits, keep_probability, sess, is_training, batch_size, log_dir, self.epochs_completed, encoding_keep_prob=encoding_keep_prob, is_validation=True)
             # Start next epoch
             start = 0
             self.batch_offset = batch_size

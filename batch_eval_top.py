@@ -108,6 +108,7 @@ def batch_inference(input_tensor,
                     keep_probability,
                     encoding_keep_prob,
                     sess,
+                    is_training,
                     input_batch_list,
                     coordinate_batch_list,
                     height,
@@ -116,9 +117,9 @@ def batch_inference(input_tensor,
     logits_map = np.zeros((height, width, 6), dtype=np.float32)
     for i in range(len(input_batch_list)):
         if encoding_keep_prob == None:
-            logits_batch = sess.run(logits, feed_dict={input_tensor: input_batch_list[i], keep_probability: 1.0})
+            logits_batch = sess.run(logits, feed_dict={input_tensor: input_batch_list[i], keep_probability: 1.0, is_training: False})
         else:
-            logits_batch = sess.run(logits, feed_dict={input_tensor: input_batch_list[i], keep_probability: 1.0, encoding_keep_prob: 1.0})
+            logits_batch = sess.run(logits, feed_dict={input_tensor: input_batch_list[i], keep_probability: 1.0, is_training: False, encoding_keep_prob: 1.0})
         for j in range(logits_batch.shape[0]):
             logits_map[coordinate_batch_list[i][j][0]:coordinate_batch_list[i][j][0] + patch_size,
                        coordinate_batch_list[i][j][1]:coordinate_batch_list[i][j][1] + patch_size, :] += logits_batch[j]
@@ -127,7 +128,7 @@ def batch_inference(input_tensor,
 def eval_dir(input_tensor,
              logits,
              keep_probability,
-             sess,
+             sess, is_training,
              batch_size,
              log_dir,
              epoch_num,
@@ -138,15 +139,15 @@ def eval_dir(input_tensor,
              horizontal_stride=112,
              is_validation=True):
     if is_validation:
-        filename = ['top_mosaic_09cm_area7', 'top_mosaic_09cm_area17', 'top_mosaic_09cm_area23', 'top_mosaic_09cm_area37']
-        # filename = ['top_mosaic_09cm_area7']
+        # filename = ['top_mosaic_09cm_area7', 'top_mosaic_09cm_area17', 'top_mosaic_09cm_area23', 'top_mosaic_09cm_area37']
+        filename = ['top_mosaic_09cm_area7']
         acc_logfile = 'epoch_val_acc.csv'
     else:
-        # filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3']
-        filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
+        filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3']
+        """ filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
                     'top_mosaic_09cm_area11', 'top_mosaic_09cm_area13', 'top_mosaic_09cm_area15',
                     'top_mosaic_09cm_area21', 'top_mosaic_09cm_area26', 'top_mosaic_09cm_area28',
-                    'top_mosaic_09cm_area30', 'top_mosaic_09cm_area32', 'top_mosaic_09cm_area34']
+                    'top_mosaic_09cm_area30', 'top_mosaic_09cm_area32', 'top_mosaic_09cm_area34'] """
 
         # For submission only
         """ filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
@@ -160,7 +161,7 @@ def eval_dir(input_tensor,
     num_pixels = 0
     for fn in filename:
         input_batch_list, coordinate_batch_list, height, width = create_patch_batch_list(fn, batch_size, num_channels=num_channels)
-        pred_annotation_map = batch_inference(input_tensor, logits, keep_probability, encoding_keep_prob, sess, input_batch_list, coordinate_batch_list, height, width)
+        pred_annotation_map = batch_inference(input_tensor, logits, keep_probability, encoding_keep_prob, sess, is_training, input_batch_list, coordinate_batch_list, height, width)
         num_matches += np.sum(pred_annotation_map == imread("../ISPRS_semantic_labeling_Vaihingen/annotations/" + fn + ".png", -1))
         num_pixels += pred_annotation_map.shape[0] * pred_annotation_map.shape[1]
     with open(join(log_dir, acc_logfile), 'a') as f:

@@ -32,7 +32,7 @@ def create_param_names_from_layers(layer_names):
     param_list[3] = layer_names[1] + '_moments'
     return param_list
 
-def construct_test_batch_normalisation_block(current, net, weights, start_weight_index, param_names, layer_names):
+def construct_batch_normalisation_block(current, net, weights, start_weight_index, param_names, layer_names):
     scale = weights[start_weight_index + 1][1].reshape(-1)
     scale = utils.get_variable(scale, name=param_names[1])
 
@@ -43,9 +43,20 @@ def construct_test_batch_normalisation_block(current, net, weights, start_weight
     mean = utils.get_variable(mean, name=param_names[3] + '_mean')
 
     variance = weights[start_weight_index + 3][1][:, 1].reshape(-1)
-    variance = utils.get_variable(variance, name=param_names[3] + '_variance')
+    variance = utils.get_variable(variance * variance, name=param_names[3] + '_variance')
 
-    current = tf.add(tf.multiply(scale, tf.divide(tf.subtract(current, mean), variance)), offset, name=layer_names[1])
+    batch_mean, batch_variance = tf.nn.moments(current, [0, 1, 2], name='batch_moments')
+    decay = 1 - weights[start_weight_index + 3][2][0][0]
+    ema = tf.train.ExponentialMovingAverage(decay=decay)
+
+    def mean_var_with_update():
+        ema_apply_op = ema.apply([batch_mean, batch_variance])
+        with tf.control_dependencies([ema_apply_op]):
+            return tf.identity(batch_mean), tf.identity(batch_variance)
+
+    # mean, variance = tf.cond(is_training, mean_var_with_update, lambda: (ema.average(batch_mean), ema.average(batch_variance)))
+
+    current = tf.nn.batch_normalization(current, mean, variance, offset, scale, 1e-5, name=layer_names[1])
 
     net[layer_names[1]] = current
 
@@ -69,7 +80,7 @@ def construct_conv_bn_block(current, net, weights, start_weight_index, param_nam
     # print(layer_names)
     # print(param_names)
     # print()
-    current, net = construct_test_batch_normalisation_block(current, net, weights, start_weight_index, param_names, layer_names)
+    current, net = construct_batch_normalisation_block(current, net, weights, start_weight_index, param_names, layer_names)
     return current, net
 
 def construct_conv_bn_relu_block(current, net, weights, start_weight_index, param_names, layer_names, stride, keep_prob):
@@ -186,7 +197,7 @@ def inference(x, weights, keep_prob):
     return prediction, image_net
 
 def main(argv=None):
-    os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "2"
     resnet101_net = utils.get_model_data('../pretrained_models/imagenet-resnet-101-dag.mat')
     weights = np.squeeze(resnet101_net['params'])
 
@@ -196,7 +207,7 @@ def main(argv=None):
     normalised_img = utils.process_image(resized_img, mean)
 
     x = _input()
-    predicted_class, image_net = inference(x, weights, 0.85)
+    predicted_class, image_net = inference(x, weights, 1.0)
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
     score, category = sess.run([tf.reduce_max(image_net['prob'][0][0][0]), predicted_class],
