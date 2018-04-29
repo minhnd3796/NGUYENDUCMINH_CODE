@@ -4,20 +4,19 @@ import numpy as np
 import tensorflow as tf
 from six.moves import xrange
 import datetime
-import Batch_manager as dataset
-import data_reader as reader
-import tensor_utils as utils
-from infer_imagenet_resnet_101_v3 import resnet101_net
+import Batch_manager_5channels as dataset
+import data_reader_5channels as reader
+import tensor_utils_5_channels as utils
+from infer_imagenet_resnet_101_5chan_v3 import resnet101_net
 from sys import argv
 from os.path import join
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "32", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "../logs-resnet101_3channels_v3/", "path to logs directory")
+tf.flags.DEFINE_string("logs_dir", "../logs-resnet101_5channels_v3/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
-tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat",
-                     "Path to model mat")
+tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to model mat")
 tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
 tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
 
@@ -40,11 +39,13 @@ def inference(image, keep_prob, is_training):
     resnet101_model = utils.get_model_data(FLAGS.model_dir)
     weights = np.squeeze(resnet101_model['params'])
 
-    mean_pixel = resnet101_model['meta'][0][0][2][0][0][2]
-    # mean_pixel = np.zeros((IMAGE_SIZE, IMAGE_SIZE, 3))
-    # mean_pixel[:, :, 0] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 81.28988761879855
-    # mean_pixel[:, :, 1] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 81.93008162338278
-    # mean_pixel[:, :, 2] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 120.8952399852595
+    mean_pixel_init = resnet101_model['meta'][0][0][2][0][0][2]
+    mean_pixel = np.zeros((IMAGE_SIZE, IMAGE_SIZE, 5))
+    mean_pixel[:, :, 0] = mean_pixel_init[:, :, 0]
+    mean_pixel[:, :, 1] = mean_pixel_init[:, :, 1]
+    mean_pixel[:, :, 2] = mean_pixel_init[:, :, 2]
+    mean_pixel[:, :, 3] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 30.69861307993539
+    mean_pixel[:, :, 4] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 284.9702
 
     normalised_img = utils.process_image(image, mean_pixel)
 
@@ -101,7 +102,7 @@ def build_session(cuda_device):
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
 
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
-    image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 3], name="input_image")
+    image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 5], name="input_image")
     annotation = tf.placeholder(tf.int32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 1], name="annotation")
     is_training = tf.placeholder(tf.bool, name="is_training")
     pred_annotation, logits = inference(image, keep_probability, is_training)

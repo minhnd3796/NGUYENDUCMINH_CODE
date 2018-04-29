@@ -18,7 +18,7 @@ base_dir_tiny_train_gt = "../ISPRS_semantic_labeling_Vaihingen/tiny_train_gt"
 
 image_size = 224
 CROP_SIZE = 224
-num_cropping_per_image = 3333
+num_cropping_per_image = 4096
 validate_image = ["top_mosaic_09cm_area7.png","top_mosaic_09cm_area17.png","top_mosaic_09cm_area23.png","top_mosaic_09cm_area37.png"]
 
 def create_training_dataset():

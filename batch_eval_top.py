@@ -17,7 +17,7 @@ def create_patch_batch_list(filename,
     coordinate_batch_list = []
     top_dir = join(data_dir, 'top')
     global_patch_index = 0
-    
+
     top_img = imread(join(top_dir, filename + '.tif'))
     height = top_img.shape[0]
     width = top_img.shape[1]
@@ -139,15 +139,15 @@ def eval_dir(input_tensor,
              horizontal_stride=112,
              is_validation=True):
     if is_validation:
-        # filename = ['top_mosaic_09cm_area7', 'top_mosaic_09cm_area17', 'top_mosaic_09cm_area23', 'top_mosaic_09cm_area37']
-        filename = ['top_mosaic_09cm_area7']
+        filename = ['top_mosaic_09cm_area7', 'top_mosaic_09cm_area17', 'top_mosaic_09cm_area23', 'top_mosaic_09cm_area37']
+        # filename = ['top_mosaic_09cm_area7']
         acc_logfile = 'epoch_val_acc.csv'
     else:
-        filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3']
-        """ filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
+        # filename = ['top_mosaic_09cm_area1']
+        filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
                     'top_mosaic_09cm_area11', 'top_mosaic_09cm_area13', 'top_mosaic_09cm_area15',
                     'top_mosaic_09cm_area21', 'top_mosaic_09cm_area26', 'top_mosaic_09cm_area28',
-                    'top_mosaic_09cm_area30', 'top_mosaic_09cm_area32', 'top_mosaic_09cm_area34'] """
+                    'top_mosaic_09cm_area30', 'top_mosaic_09cm_area32', 'top_mosaic_09cm_area34']
 
         # For submission only
         """ filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
@@ -226,6 +226,7 @@ def infer_submission(input_tensor,
              sess,
              batch_size,
              log_dir,
+             is_training,
              encoding_keep_prob=None,
              num_channels=3,
              patch_size=224,
@@ -241,7 +242,7 @@ def infer_submission(input_tensor,
     for fn in filename:
         print(">> Inferring:", fn)
         input_batch_list, coordinate_batch_list, height, width = create_patch_batch_list(fn, batch_size, num_channels=num_channels)
-        pred_annotation_map = batch_inference(input_tensor, logits, keep_probability, encoding_keep_prob, sess, input_batch_list, coordinate_batch_list, height, width)
+        pred_annotation_map = batch_inference(input_tensor, logits, keep_probability, encoding_keep_prob, sess, is_training, input_batch_list, coordinate_batch_list, height, width)
         height = pred_annotation_map.shape[0]
         width = pred_annotation_map.shape[1]
         output_image = np.zeros((height, width, 3), dtype=np.uint8)
@@ -268,6 +269,6 @@ def infer_submission(input_tensor,
         b, g, r = im.split()
         im = Image.merge("RGB", (r, g, b))
         im.save(join(log_dir, 'submission_PIL', fn + '.tif'))
-        imwrite(join(log_dir, 'submission_cv2', fn + '.tif'), output_image)
+        imwrite(join(log_dir, 'submission_cv2', fn + '.png'), output_image)
 
         # imsave(join(log_dir, 'submission', fn + '.tif'), output_image)

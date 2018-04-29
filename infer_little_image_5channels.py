@@ -211,8 +211,8 @@ if __name__ == "__main__":
     # tf.flags.DEFINE_string("logs_dir", "../logs-resnet101/", "path to logs directory")
     # if argv[1] == 'resnet101':
         # tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to vgg model mat")
-    tf.flags.DEFINE_string("logs_dir", "../submission_vgg19_5c/", "path to logs directory")
-    tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat", "Path to vgg model mat")
+    tf.flags.DEFINE_string("logs_dir", "../logs-resnet101_5channels_v3/", "path to logs directory")
+    # tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-vgg-verydeep-19.mat", "Path to vgg model mat")
     tf.flags.DEFINE_bool('debug', "False", "Debug mode: True/ False")
     tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 
@@ -222,17 +222,16 @@ if __name__ == "__main__":
     if argv[1] == 'vgg19':
         _, logits = inference(input_tensor, keep_probability)
     elif argv[1] == 'resnet101':
-        from fully_conv_resnet_5_channels import inference as resnet_inference
-        _, logits = resnet_inference(input_tensor, keep_probability)
+        from fully_conv_resnet_5_channels_v3 import inference as resnet_inference
+        is_training = tf.placeholder(tf.bool, name="is_training")
+        _, logits = resnet_inference(input_tensor, keep_probability, is_training)
     saver = tf.train.Saver()
     sess.run(tf.global_variables_initializer())
     ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
     if ckpt and ckpt.model_checkpoint_path:
         saver.restore(sess, ckpt.model_checkpoint_path)
         print("Model restored...")
-    
-    infer_submission(input_tensor, logits, keep_probability, sess, 128, FLAGS.logs_dir, num_channels=5)
-
+    infer_submission(input_tensor, logits, keep_probability, sess, 128, FLAGS.logs_dir, num_channels=5, is_training=is_training)
     # imwrite("top_mosaic_09cm_area" + argv[3] + '_' + argv[1] + '.tif',
     #        infer_little_img("../ISPRS_semantic_labeling_Vaihingen/top/" + "top_mosaic_09cm_area" + argv[3] + ".tif"))
     """ for image_name in inferred_image:
