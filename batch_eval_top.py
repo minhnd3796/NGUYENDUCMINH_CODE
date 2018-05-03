@@ -125,6 +125,28 @@ def batch_inference(input_tensor,
                        coordinate_batch_list[i][j][1]:coordinate_batch_list[i][j][1] + patch_size, :] += logits_batch[j]
     return np.argmax(logits_map, axis=2)
 
+def batch_logits_map_inference(input_tensor,
+                               logits,
+                               keep_probability,
+                               sess,
+                               is_training,
+                               input_batch_list,
+                               coordinate_batch_list,
+                               height,
+                               width,
+                               encoding_keep_prob=None,
+                               patch_size=224):
+    logits_map = np.zeros((height, width, 6), dtype=np.float32)
+    for i in range(len(input_batch_list)):
+        if encoding_keep_prob == None:
+            logits_batch = sess.run(logits, feed_dict={input_tensor: input_batch_list[i], keep_probability: 1.0, is_training: False})
+        else:
+            logits_batch = sess.run(logits, feed_dict={input_tensor: input_batch_list[i], keep_probability: 1.0, is_training: False, encoding_keep_prob: 1.0})
+        for j in range(logits_batch.shape[0]):
+            logits_map[coordinate_batch_list[i][j][0]:coordinate_batch_list[i][j][0] + patch_size,
+                       coordinate_batch_list[i][j][1]:coordinate_batch_list[i][j][1] + patch_size, :] += logits_batch[j]
+    return logits_map
+
 def eval_dir(input_tensor,
              logits,
              keep_probability,
