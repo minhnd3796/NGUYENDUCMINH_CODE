@@ -62,10 +62,11 @@ class Batch_manager:
         if self.batch_offset > self.images.shape[0]:
             # Finished epoch
             self.epochs_completed += 1
+            saver.save(sess, log_dir + "model.ckpt", self.epochs_completed)
             print("****************** Epochs completed: " + str(self.epochs_completed) + "******************")
-            if not is_validation:
+            """ if not is_validation:
                 eval_dir(input_tensor, logits, keep_probability, sess, is_training, batch_size, log_dir, self.epochs_completed, encoding_keep_prob=encoding_keep_prob, is_validation=False, num_channels=5)
-                eval_dir(input_tensor, logits, keep_probability, sess, is_training, batch_size, log_dir, self.epochs_completed, encoding_keep_prob=encoding_keep_prob, is_validation=True, num_channels=5)
+                eval_dir(input_tensor, logits, keep_probability, sess, is_training, batch_size, log_dir, self.epochs_completed, encoding_keep_prob=encoding_keep_prob, is_validation=True, num_channels=5) """
             # Start next epoch
             start = 0
             self.batch_offset = batch_size
