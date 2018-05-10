@@ -15,7 +15,7 @@ base_dir_annotations = "../ISPRS_semantic_labeling_Potsdam/annotations"
 image_size = 224
 num_cropping_per_image = 4096
 validate_image = ["top_potsdam_2_10_label.png","top_potsdam_3_10_label.png","top_potsdam_4_10_label.png",
-                  "top_potsdam_5_10_label.png", "top_potsdam_6_10_label.png", "top_potsdam_7_10_label.png"]
+                  "top_potsdam_5_10_label.png", "top_potsdam_6_10_label.png"]
 # validate_image = []
 
 def create_training_dataset():
