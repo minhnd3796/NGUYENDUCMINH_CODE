@@ -109,7 +109,7 @@ def build_session(cuda_device):
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
 
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
-    image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 5], name="input_image")
+    image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 6], name="input_image")
     annotation = tf.placeholder(tf.int32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 1], name="annotation")
     is_training = tf.placeholder(tf.bool, name="is_training")
     pred_annotation, logits = inference(image, keep_probability, is_training)
@@ -159,7 +159,7 @@ def main(argv=None):
     image, logits, is_training, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation, train_writer, validation_writer = build_session(argv[1])
 
     print("Setting up image reader...")
-    train_records, valid_records = reader.read_dataset_potsdam(FLAGS.data_dir)
+    train_records, valid_records = reader.read_dataset_potsdam_test(FLAGS.data_dir)
     print(len(train_records))
     print(len(valid_records))
 
@@ -228,7 +228,7 @@ def main(argv=None):
                     f.write(str(itr) + ',' + str(train_acc) + '\n')
                 train_writer.add_summary(summary_loss, itr)
                 train_writer.add_summary(summary_acc, itr)
-            if itr % 600 == 0:
+            if itr % 760 == 0:
                 valid_images, valid_annotations = validation_dataset_reader.next_batch_potsdam(saver, FLAGS.batch_size, image, logits, keep_probability, sess, is_training, FLAGS.logs_dir, is_validation=True)
                 valid_loss, valid_acc, summary_loss, summary_acc = sess.run([loss, acc, loss_summary, acc_summary],
                                                 feed_dict={image: valid_images, annotation: valid_annotations,

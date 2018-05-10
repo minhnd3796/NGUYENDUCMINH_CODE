@@ -34,8 +34,8 @@ class Batch_manager:
 
     def _read_images(self):
         self.__channels = True
-        # self.images = np.array([self._transform(filename['image']) for filename in self.files])
-        self.images = np.array([np.load(filename) for filename in self.files])        
+        self.images = np.array([self._transform(filename['image']) for filename in self.files])
+        # self.images = np.array([np.load(filename) for filename in self.files])        
         self.__channels = False
         self.annotations = np.array(
             [np.expand_dims(self._transform_annotations(filename['annotation']), axis=3) for filename in self.files])

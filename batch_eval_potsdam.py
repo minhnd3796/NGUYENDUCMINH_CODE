@@ -18,7 +18,7 @@ def create_patch_batch_list(filename,
     top_dir = join(data_dir, 'npy_6_channel')
     global_patch_index = 0
 
-    top_img = np.load(join(top_dir, filename + '.npy'))
+    top_img = np.load(join(top_dir, filename.replace('label','RGBIR') + '.npy'))
     height = top_img.shape[0]
     width = top_img.shape[1]
     num_vertical_points = (height - patch_size) // vertical_stride + 1
@@ -161,18 +161,18 @@ def eval_dir_potsdam(input_tensor,
                      horizontal_stride=112,
                      is_validation=True):
     if is_validation:
-        filename = ["top_potsdam_2_11_label","top_potsdam_3_12_label","top_potsdam_4_10_label","top_potsdam_6_11_label","top_potsdam_7_12_label"]
-        # filename = ["top_potsdam_2_11_label"]
+        # filename = ["top_potsdam_2_11_label","top_potsdam_3_12_label","top_potsdam_4_10_label","top_potsdam_6_11_label","top_potsdam_7_12_label"]
+        filename = ["top_potsdam_2_11_label"]
         acc_logfile = 'epoch_val_acc.csv'
     else:
-        # filename = ['top_mosaic_09cm_area1']
-        filename = ['top_potsdam_2_10_label', 'top_potsdam_2_12_label', 'top_potsdam_3_10_label',
+        filename = ['top_potsdam_2_10_label']
+        """ filename = ['top_potsdam_2_10_label', 'top_potsdam_2_12_label', 'top_potsdam_3_10_label',
                     'top_potsdam_3_11_label', 'top_potsdam_4_11_label', 'top_potsdam_4_12_label',
                     'top_potsdam_5_10_label', 'top_potsdam_5_11_label', 'top_potsdam_5_12_label',
                     'top_potsdam_6_7_label', 'top_potsdam_6_8_label', 'top_potsdam_6_9_label',
                     'top_potsdam_6_10_label', 'top_potsdam_6_12_label', 'top_potsdam_7_7_label',
                     'top_potsdam_7_8_label', 'top_potsdam_7_9_label', 'top_potsdam_7_10_label',
-                    'top_potsdam_7_11_label']
+                    'top_potsdam_7_11_label'] """
         acc_logfile = 'epoch_train_acc.csv'
     num_matches = 0
     num_pixels = 0

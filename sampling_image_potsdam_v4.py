@@ -10,7 +10,7 @@ base_dir_train = "../ISPRS_semantic_labeling_Potsdam/training_set"
 base_dir_validate = "../ISPRS_semantic_labeling_Potsdam/validation_set"
 base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Potsdam/ground_truths"
 base_dir_top = "../ISPRS_semantic_labeling_Potsdam/npy_6_channel"
-base_dir_annotations = "../ISPRS_semantic_labeling_Potsdam/annotaions"
+base_dir_annotations = "../ISPRS_semantic_labeling_Potsdam/annotations"
 
 test_dir_train = "../ISPRS_semantic_labeling_Potsdam/training_set_test"
 test_dir_validate = "../ISPRS_semantic_labeling_Potsdam/validation_set_test"
@@ -21,8 +21,9 @@ test_dir_annotations = "../ISPRS_semantic_labeling_Potsdam/annotations_test"
 image_size = 224
 CROP_SIZE = 224
 num_cropping_per_image = 4096
-num_cropping_per_test_image = 4
+num_cropping_per_test_image = 32
 validate_image = ["top_potsdam_2_11_label.png","top_potsdam_3_12_label.png","top_potsdam_4_10_label.png","top_potsdam_6_11_label.png","top_potsdam_7_12_label.png"]
+validate_image_test = ["top_potsdam_2_11_label.png"]
 
 def create_training_dataset():
     if not exists(base_dir_train):
@@ -80,7 +81,7 @@ def create_training_test_dataset():
     if not exists(test_dir_train_validate_gt):
         mkdir(test_dir_train_validate_gt)
     for filename in os.listdir(test_dir_annotations):
-        if filename in validate_image:
+        if filename in validate_image_test:
             continue
         top_image = np.load(join(test_dir_top, splitext(filename)[0].replace('label','RGBIR')+".npy"))
         annotation_image = imread(join(test_dir_annotations, filename), -1)
@@ -106,7 +107,7 @@ def create_training_test_dataset():
 def create_validation_test_dataset():
     if not exists(test_dir_validate):
         mkdir(test_dir_validate)
-    for filename in validate_image:
+    for filename in validate_image_test:
         top_image = np.load(join(test_dir_top, splitext(filename)[0].replace('label','RGBIR')+".npy"))
         annotation_image = imread(join(test_dir_annotations, filename), -1)
         width = np.shape(top_image)[1]
@@ -126,7 +127,7 @@ def create_validation_test_dataset():
 
 if __name__=="__main__":
     np.random.seed(3796)
-    """ create_training_dataset()
-    create_validation_dataset() """
-    create_training_test_dataset()
-    create_validation_test_dataset()
+    create_training_dataset()
+    create_validation_dataset()
+    """ create_training_test_dataset()
+    create_validation_test_dataset() """
