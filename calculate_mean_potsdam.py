@@ -2,11 +2,11 @@ import os
 
 import numpy as np
 from libtiff import TIFF
-from scipy.misc import imread
+from cv2 import imread
 
-BASE_DIRECTORY = 'ISPRS_semantic_labeling_Potsdam'
+BASE_DIRECTORY = '../ISPRS_semantic_labeling_Potsdam'
 
-mean =[]
+""" mean =[]
 for filename in os.listdir(BASE_DIRECTORY+'/4_Ortho_RGBIR'):
     if '.tif' in filename:
         image = TIFF.open(BASE_DIRECTORY+'/4_Ortho_RGBIR/'+filename,'r')
@@ -48,13 +48,13 @@ for filename in os.listdir(BASE_DIRECTORY+'/4_Ortho_RGBIR'):
         mean.append(np.mean(image))
 print('IR:')
 print(np.mean(np.array(mean)))
-print()
+print() """
 
 
 mean =[]
 for filename in os.listdir(BASE_DIRECTORY+'/1_DSM'):
     if '.tif' in filename:
-        image = imread(BASE_DIRECTORY+'/1_DSM/'+filename)
+        image = TIFF.open(BASE_DIRECTORY+'/1_DSM/'+filename,'r').read_image()
         mean.append(np.mean(image))
 print('DSM:')
 print(np.mean(np.array(mean)))
@@ -63,8 +63,15 @@ print()
 mean =[]
 for filename in os.listdir(BASE_DIRECTORY+'/1_DSM_normalisation'):
     if 'lastools' in filename:
-        image = imread(BASE_DIRECTORY+'/1_DSM_normalisation/'+filename)
+        image = imread(BASE_DIRECTORY+'/1_DSM_normalisation/'+filename, -1)
         mean.append(np.mean(image))
 print('NDSM:')
 print(np.mean(np.array(mean)))
 print()
+
+# R: 86.55175021564328
+# G: 92.54522770394738
+# B: 85.91596489181288
+# IR: 97.639895122076
+# DSM: 37.69138
+# nDSM: 45.548982715963994

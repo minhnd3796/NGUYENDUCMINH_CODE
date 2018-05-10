@@ -23,7 +23,7 @@ tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
 MODEL_URL = 'http://www.vlfeat.org/matconvnet/models/imagenet-resnet-101-dag.mat'
 
 # MAX_ITERATION = int(1e6 + 1)
-MAX_ITERATION = int(153600 + 1) # 25 epochs
+MAX_ITERATION = int(243200 + 1) # 25 epochs
 NUM_OF_CLASSES = 6
 IMAGE_SIZE = 224
 
@@ -44,9 +44,9 @@ def inference(image, keep_prob, is_training):
     mean_pixel[:, :, 0] = mean_pixel_init[:, :, 0]
     mean_pixel[:, :, 1] = mean_pixel_init[:, :, 1]
     mean_pixel[:, :, 2] = mean_pixel_init[:, :, 2]
-    mean_pixel[:, :, 3] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 30.69861307993539
-    mean_pixel[:, :, 4] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 284.9702
-    mean_pixel[:, :, 5] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 284.9702
+    mean_pixel[:, :, 3] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 97.639895122076
+    mean_pixel[:, :, 4] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 45.548982715963994
+    mean_pixel[:, :, 5] = np.ones((IMAGE_SIZE, IMAGE_SIZE)) * 37.69138
 
     normalised_img = utils.process_image(image, mean_pixel)
 

@@ -251,11 +251,9 @@ def infer_submission(input_tensor,
              horizontal_stride=112):
     filename = ['top_potsdam_2_13_label', 'top_potsdam_2_14_label', 'top_potsdam_3_13_label',
                 'top_potsdam_3_14_label', 'top_potsdam_4_13_label', 'top_potsdam_4_14_label',
-                'top_potsdam_4_15_label', 'top_potsdam_5_11_label', 'top_potsdam_5_12_label',
-                'top_potsdam_6_7_label', 'top_potsdam_6_8_label', 'top_potsdam_6_9_label',
-                'top_potsdam_6_10_label', 'top_potsdam_6_12_label', 'top_potsdam_7_7_label',
-                'top_potsdam_7_8_label', 'top_potsdam_7_9_label', 'top_potsdam_7_10_label',
-                'top_potsdam_7_11_label']
+                'top_potsdam_4_15_label', 'top_potsdam_5_13_label', 'top_potsdam_5_14_label',
+                'top_potsdam_5_15_label', 'top_potsdam_6_13_label', 'top_potsdam_6_14_label',
+                'top_potsdam_6_15_label', 'top_potsdam_7_13_label']
     for fn in filename:
         print(">> Inferring:", fn)
         input_batch_list, coordinate_batch_list, height, width = create_patch_batch_list(fn, batch_size, num_channels=num_channels)
