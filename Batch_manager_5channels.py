@@ -6,7 +6,7 @@ from os import mkdir
 from batch_eval_top import eval_dir
 from batch_eval_potsdam import eval_dir_potsdam
 from batch_eval_15 import eval_dir_15
-``
+
 class Batch_manager:
     files = []
     images = []

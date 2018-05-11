@@ -12,7 +12,7 @@ from sys import argv
 from os.path import join
 
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer("batch_size", "64", "batch size for training")
+tf.flags.DEFINE_integer("batch_size", "32", "batch size for training")
 tf.flags.DEFINE_string("logs_dir", "../logs-resnet101_15channels_3skips/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
@@ -22,8 +22,8 @@ tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
 
 MODEL_URL = 'http://www.vlfeat.org/matconvnet/models/imagenet-resnet-101-dag.mat'
 
-# MAX_ITERATION = int(153600 + 1) # 25 epochs
-MAX_ITERATION = int(76800 + 1) # 25 epochs
+MAX_ITERATION = int(153600 + 1) # 25 epochs
+# MAX_ITERATION = int(76800 + 1) # 25 epochs
 NUM_OF_CLASSES = 6
 IMAGE_SIZE = 224
 
