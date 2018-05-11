@@ -80,6 +80,30 @@ class Batch_manager:
             self.annotations = self.annotations[perm]
         end = self.batch_offset
         return self.images[start:end].astype(dtype=np.float32), self.annotations[start:end]
+
+    def next_batch_15(self, saver, batch_size, input_tensor, logits, keep_probability, sess, is_training, log_dir, encoding_keep_prob=None, is_validation=False):
+        start = self.batch_offset
+        self.batch_offset += batch_size
+        np.random.seed(self.seed)
+        if self.batch_offset > self.images.shape[0]:
+            # Finished epoch
+            self.epochs_completed += 1
+            saver.save(sess, log_dir + "model.ckpt", self.epochs_completed)
+            print("****************** Epochs completed: " + str(self.epochs_completed) + "******************")
+            if not is_validation:
+                eval_dir(input_tensor, logits, keep_probability, sess, is_training, batch_size, log_dir, self.epochs_completed, encoding_keep_prob=encoding_keep_prob, is_validation=False, num_channels=15)
+                eval_dir(input_tensor, logits, keep_probability, sess, is_training, batch_size, log_dir, self.epochs_completed, encoding_keep_prob=encoding_keep_prob, is_validation=True, num_channels=15)
+            # Start next epoch
+            start = 0
+            self.batch_offset = batch_size
+        if start == 0:
+            # Shuffle the data
+            perm = np.arange(self.images.shape[0])
+            np.random.shuffle(perm)
+            self.images = self.images[perm]
+            self.annotations = self.annotations[perm]
+        end = self.batch_offset
+        return self.images[start:end].astype(dtype=np.float32), self.annotations[start:end]
     
     def next_batch_potsdam(self, saver, batch_size, input_tensor, logits, keep_probability, sess, is_training, log_dir, encoding_keep_prob=None, is_validation=False):
         start = self.batch_offset

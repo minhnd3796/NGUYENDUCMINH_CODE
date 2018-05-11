@@ -169,7 +169,7 @@ def main(argv=None):
     image, logits, is_training, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation, train_writer, validation_writer = build_session(argv[1])
 
     print("Setting up image reader...")
-    train_records, valid_records = reader.read_dataset(FLAGS.data_dir)
+    train_records, valid_records = reader.read_dataset_15_test(FLAGS.data_dir)
     print(len(train_records))
     print(len(valid_records))
 
@@ -223,7 +223,7 @@ def main(argv=None):
 
     if FLAGS.mode == "train":
         for itr in xrange(MAX_ITERATION):
-            train_images, train_annotations = train_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, is_training, FLAGS.logs_dir)
+            train_images, train_annotations = train_dataset_reader.next_batch_15(saver, FLAGS.batch_size, image, logits, keep_probability, sess, is_training, FLAGS.logs_dir)
             feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 0.5, is_training: True}
             tf.set_random_seed(3796 + itr) # get deterministicly random dropouts
             sess.run(train_op, feed_dict=feed_dict)
@@ -239,7 +239,7 @@ def main(argv=None):
                 train_writer.add_summary(summary_loss, itr)
                 train_writer.add_summary(summary_acc, itr)
             if itr % 600 == 0:
-                valid_images, valid_annotations = validation_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, is_training, FLAGS.logs_dir, is_validation=True)
+                valid_images, valid_annotations = validation_dataset_reader.next_batch_15(saver, FLAGS.batch_size, image, logits, keep_probability, sess, is_training, FLAGS.logs_dir, is_validation=True)
                 valid_loss, valid_acc, summary_loss, summary_acc = sess.run([loss, acc, loss_summary, acc_summary],
                                                 feed_dict={image: valid_images, annotation: valid_annotations,
                                                             keep_probability: 1.0, is_training: False})
