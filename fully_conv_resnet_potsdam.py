@@ -12,7 +12,7 @@ from sys import argv
 from os.path import join
 
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer("batch_size", "32", "batch size for training")
+tf.flags.DEFINE_integer("batch_size", "64", "batch size for training")
 tf.flags.DEFINE_string("logs_dir", "../logs-resnet101_potsdam/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Potsdam", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
@@ -22,8 +22,8 @@ tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
 
 MODEL_URL = 'http://www.vlfeat.org/matconvnet/models/imagenet-resnet-101-dag.mat'
 
-# MAX_ITERATION = int(1e6 + 1)
-MAX_ITERATION = int(243200 + 1) # 25 epochs
+# MAX_ITERATION = int(243200 + 1) # 25 epochs
+MAX_ITERATION = int(121600 + 1) # 25 epochs
 NUM_OF_CLASSES = 6
 IMAGE_SIZE = 224
 
@@ -159,7 +159,7 @@ def main(argv=None):
     image, logits, is_training, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation, train_writer, validation_writer = build_session(argv[1])
 
     print("Setting up image reader...")
-    train_records, valid_records = reader.read_dataset_potsdam_test(FLAGS.data_dir)
+    train_records, valid_records = reader.read_dataset_potsdam(FLAGS.data_dir)
     print(len(train_records))
     print(len(valid_records))
 
