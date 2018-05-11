@@ -5,7 +5,8 @@ from os.path import exists, join
 from os import mkdir
 from batch_eval_top import eval_dir
 from batch_eval_potsdam import eval_dir_potsdam
-
+from batch_eval_15 import eval_dir_15
+``
 class Batch_manager:
     files = []
     images = []
@@ -91,8 +92,8 @@ class Batch_manager:
             saver.save(sess, log_dir + "model.ckpt", self.epochs_completed)
             print("****************** Epochs completed: " + str(self.epochs_completed) + "******************")
             if not is_validation:
-                eval_dir(input_tensor, logits, keep_probability, sess, is_training, batch_size, log_dir, self.epochs_completed, encoding_keep_prob=encoding_keep_prob, is_validation=False, num_channels=15)
-                eval_dir(input_tensor, logits, keep_probability, sess, is_training, batch_size, log_dir, self.epochs_completed, encoding_keep_prob=encoding_keep_prob, is_validation=True, num_channels=15)
+                eval_dir_15(input_tensor, logits, keep_probability, sess, is_training, batch_size, log_dir, self.epochs_completed, encoding_keep_prob=encoding_keep_prob, is_validation=False, num_channels=15)
+                eval_dir_15(input_tensor, logits, keep_probability, sess, is_training, batch_size, log_dir, self.epochs_completed, encoding_keep_prob=encoding_keep_prob, is_validation=True, num_channels=15)
             # Start next epoch
             start = 0
             self.batch_offset = batch_size
