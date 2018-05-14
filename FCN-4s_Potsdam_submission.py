@@ -13,7 +13,7 @@ from os.path import join
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "64", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "../logs-resnet101_potsdam/", "path to logs directory")
+tf.flags.DEFINE_string("logs_dir", "../logs-resnet101_potsdam_submission/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Potsdam", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
 tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to model mat")
@@ -22,8 +22,7 @@ tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
 
 MODEL_URL = 'http://www.vlfeat.org/matconvnet/models/imagenet-resnet-101-dag.mat'
 
-# MAX_ITERATION = int(243200 + 1) # 25 epochs with batch size 32
-MAX_ITERATION = int(121600 + 1) # 25 epochs with batch size 64
+MAX_ITERATION = int(153600 + 1) # 25 epochs with batch size 64
 NUM_OF_CLASSES = 6
 IMAGE_SIZE = 224
 
@@ -130,22 +129,22 @@ def build_session(cuda_device):
 
     print("Setting up Saver...")
     saver = tf.train.Saver(max_to_keep=15)
+    # saver = tf.train.Saver()
     
     train_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/train', sess.graph)
-    validation_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/validation')
     sess.run(tf.global_variables_initializer())
     ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
     if ckpt and ckpt.model_checkpoint_path:
         saver.restore(sess, ckpt.model_checkpoint_path)
         print("Model restored...")
-    return image, logits, is_training, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation, train_writer, validation_writer
+    return image, logits, is_training, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation, train_writer
 
 def main(argv=None):
     np.random.seed(3796)
-    image, logits, is_training, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation, train_writer, validation_writer = build_session(argv[1])
+    image, logits, is_training, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation, train_writer = build_session(argv[1])
 
     print("Setting up image reader...")
-    train_records, valid_records = reader.read_dataset_potsdam(FLAGS.data_dir)
+    train_records, valid_records = reader.read_dataset_potsdam_submission(FLAGS.data_dir)
     print(len(train_records))
     print(len(valid_records))
 
@@ -153,7 +152,6 @@ def main(argv=None):
     image_options = {'resize': False, 'resize_size': IMAGE_SIZE}
     if FLAGS.mode == 'train':
         train_dataset_reader = dataset.Batch_manager(train_records, image_options)
-    validation_dataset_reader = dataset.Batch_manager(valid_records, image_options)
 
     if FLAGS.mode == "train":
         for itr in xrange(MAX_ITERATION):
@@ -172,19 +170,6 @@ def main(argv=None):
                     f.write(str(itr) + ',' + str(train_acc) + '\n')
                 train_writer.add_summary(summary_loss, itr)
                 train_writer.add_summary(summary_acc, itr)
-            if itr % 760 == 0:
-                valid_images, valid_annotations = validation_dataset_reader.next_batch_potsdam(saver, FLAGS.batch_size, image, logits, keep_probability, sess, is_training, FLAGS.logs_dir, is_validation=True)
-                valid_loss, valid_acc, summary_loss, summary_acc = sess.run([loss, acc, loss_summary, acc_summary],
-                                                feed_dict={image: valid_images, annotation: valid_annotations,
-                                                            keep_probability: 1.0, is_training: False})
-                validation_writer.add_summary(summary_loss, itr)
-                validation_writer.add_summary(summary_acc, itr)
-                print("%s ---> Validation_loss: %g , Validation Accuracy: %g" % (datetime.datetime.now(), valid_loss, valid_acc))
-                with open(join(FLAGS.logs_dir, 'iter_val_loss.csv'), 'a') as f:
-                    f.write(str(itr) + ',' + str(valid_loss) + '\n')
-                with open(join(FLAGS.logs_dir, 'iter_val_acc.csv'), 'a') as f:
-                    f.write(str(itr) + ',' + str(valid_acc) + '\n')
-                # saver.save(sess, FLAGS.logs_dir + "model.ckpt", itr)
 
     elif FLAGS.mode == "visualize":
         valid_images, valid_annotations = validation_dataset_reader.get_random_batch(FLAGS.batch_size)

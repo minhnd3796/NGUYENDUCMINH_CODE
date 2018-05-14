@@ -6,9 +6,9 @@ from cv2 import imread, imwrite
 from os.path import exists, join, splitext
 from os import listdir, mkdir
 
-base_dir_train = "../ISPRS_semantic_labeling_Potsdam/training_set"
+base_dir_train = "../ISPRS_semantic_labeling_Potsdam/training_set_submission"
 base_dir_validate = "../ISPRS_semantic_labeling_Potsdam/validation_set"
-base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Potsdam/ground_truths"
+base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Potsdam/ground_truths_submission"
 base_dir_top = "../ISPRS_semantic_labeling_Potsdam/npy_6_channel"
 base_dir_annotations = "../ISPRS_semantic_labeling_Potsdam/annotations"
 
@@ -22,7 +22,8 @@ image_size = 224
 CROP_SIZE = 224
 num_cropping_per_image = 4096
 num_cropping_per_test_image = 32
-validate_image = ["top_potsdam_2_11_label.png","top_potsdam_3_12_label.png","top_potsdam_4_10_label.png","top_potsdam_6_11_label.png","top_potsdam_7_12_label.png"]
+# validate_image = ["top_potsdam_2_11_label.png","top_potsdam_3_12_label.png","top_potsdam_4_10_label.png","top_potsdam_6_11_label.png","top_potsdam_7_12_label.png"]
+validate_image = []
 validate_image_test = ["top_potsdam_2_11_label.png"]
 
 def create_training_dataset():
@@ -52,7 +53,6 @@ def create_training_dataset():
             imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(4 * i + 2) + ".png"), np.flipud(annotation_image_cropped))
             imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(4 * i + 3) + ".png"), np.flipud(np.fliplr(annotation_image_cropped)))
     return None
-
 
 def create_validation_dataset():
     if not exists(base_dir_validate):
@@ -103,7 +103,6 @@ def create_training_test_dataset():
             imwrite(join(test_dir_train_validate_gt, splitext(filename)[0] + "_" + str(4 * i + 3) + ".png"), np.flipud(np.fliplr(annotation_image_cropped)))
     return None
 
-
 def create_validation_test_dataset():
     if not exists(test_dir_validate):
         mkdir(test_dir_validate)
@@ -128,6 +127,6 @@ def create_validation_test_dataset():
 if __name__=="__main__":
     np.random.seed(3796)
     create_training_dataset()
-    create_validation_dataset()
+    # create_validation_dataset()
     """ create_training_test_dataset()
     create_validation_test_dataset() """
