@@ -32,6 +32,8 @@ def vgg_net(weights, image):
             kind = name[:2]
         if kind == 'conv' or kind == 'fc':
             kernels, bias = weights[i][0][0][0][0]
+            print('Kernel size:', kernels.shape)
+            print('Bias size:', bias.shape)
             # matconvnet: weights are [width, height, in_channels, out_channels]
             # tensorflow: weights are [height, width, in_channels, out_channels]
             # kernels = utils.get_variable(np.transpose(kernels, (0, 1, 2, 3)), name=name + "_w")
@@ -59,7 +61,9 @@ def inference(x, weights):
 
 def main(argv=None):
     img = imread(argv[1])
-    environ["CUDA_VISIBLE_DEVICES"] = argv[2]
+    # environ["CUDA_VISIBLE_DEVICES"] = argv[2]
+    environ["CUDA_VISIBLE_DEVICES"] = ''
+    
     # tmp = loadmat('im_.mat')
 
     vgg19_net = utils.get_model_data('../pretrained_models/imagenet-vgg-verydeep-19.mat')

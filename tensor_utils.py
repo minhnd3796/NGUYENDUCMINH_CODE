@@ -58,7 +58,6 @@ def conv2d_strided(x, W, b):
     conv = tf.nn.conv2d(x, W, strides=[1, 2, 2, 1], padding="SAME")
     return tf.nn.bias_add(conv, b)
 
-
 def conv2d_transpose_strided(x, W, b, output_shape=None, stride = 2):
     if output_shape is None:
         output_shape = x.get_shape().as_list()
