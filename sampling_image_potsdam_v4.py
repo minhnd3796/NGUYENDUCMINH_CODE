@@ -25,6 +25,7 @@ num_cropping_per_test_image = 32
 # validate_image = ["top_potsdam_2_11_label.png","top_potsdam_3_12_label.png","top_potsdam_4_10_label.png","top_potsdam_6_11_label.png","top_potsdam_7_12_label.png"]
 validate_image = []
 validate_image_test = ["top_potsdam_2_11_label.png"]
+total = 4096 * 3 * 24
 
 def create_training_dataset():
     if not exists(base_dir_train):
@@ -41,17 +42,17 @@ def create_training_dataset():
         for i in range(num_cropping_per_image):
             x = int(np.random.uniform(0, height - image_size + 1))
             y = int(np.random.uniform(0, width - image_size + 1))
-            print((x, y))
             top_image_cropped = top_image[x:x + image_size, y:y + image_size, :]
-            np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(4 * i) + ".npy"), top_image_cropped)
-            np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(4 * i + 1) + ".npy"), np.fliplr(top_image_cropped))
-            np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(4 * i + 2) + ".npy"), np.flipud(top_image_cropped))
-            np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(4 * i + 3) + ".npy"), np.flipud(np.fliplr(top_image_cropped)))
+            np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(3 * i) + ".npy"), top_image_cropped)
+            np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(3 * i + 1) + ".npy"), np.fliplr(top_image_cropped))
+            np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(3 * i + 2) + ".npy"), np.flipud(top_image_cropped))
+            # np.save(join(base_dir_train, splitext(filename)[0] + "_" + str(4 * i + 3) + ".npy"), np.flipud(np.fliplr(top_image_cropped)))
             annotation_image_cropped = annotation_image[x:x + image_size, y:y + image_size]
-            imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(4 * i) + ".png"), annotation_image_cropped)
-            imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(4 * i + 1) + ".png"), np.fliplr(annotation_image_cropped))
-            imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(4 * i + 2) + ".png"), np.flipud(annotation_image_cropped))
-            imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(4 * i + 3) + ".png"), np.flipud(np.fliplr(annotation_image_cropped)))
+            imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(3 * i) + ".png"), annotation_image_cropped)
+            imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(3 * i + 1) + ".png"), np.fliplr(annotation_image_cropped))
+            imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(3 * i + 2) + ".png"), np.flipud(annotation_image_cropped))
+            # print(300.0 * i / total, end='\r')
+            # imwrite(join(base_dir_train_validate_gt, splitext(filename)[0] + "_" + str(4 * i + 3) + ".png"), np.flipud(np.fliplr(annotation_image_cropped)))
     return None
 
 def create_validation_dataset():

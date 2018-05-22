@@ -13,17 +13,15 @@ IMAGE_SIZE = 224
 if __name__ == '__main__':
     environ["CUDA_VISIBLE_DEVICES"] = argv[2]
     # Uncomment if for submission
-    filename = ['top_potsdam_2_10_label', 'top_potsdam_2_12_label', 'top_potsdam_3_10_label',
-                'top_potsdam_3_11_label', 'top_potsdam_4_11_label', 'top_potsdam_4_12_label',
-                'top_potsdam_5_10_label', 'top_potsdam_5_11_label', 'top_potsdam_5_12_label',
-                'top_potsdam_6_7_label', 'top_potsdam_6_8_label', 'top_potsdam_6_9_label',
-                'top_potsdam_6_10_label', 'top_potsdam_6_12_label', 'top_potsdam_7_7_label',
-                'top_potsdam_7_8_label', 'top_potsdam_7_9_label', 'top_potsdam_7_10_label',
-                'top_potsdam_7_11_label']
+    filename = ['top_potsdam_2_13_label', 'top_potsdam_2_14_label', 'top_potsdam_3_13_label',
+                'top_potsdam_3_14_label', 'top_potsdam_4_13_label', 'top_potsdam_4_14_label',
+                'top_potsdam_4_15_label', 'top_potsdam_5_13_label', 'top_potsdam_5_14_label',
+                'top_potsdam_5_15_label', 'top_potsdam_6_13_label', 'top_potsdam_6_14_label',
+                'top_potsdam_6_15_label', 'top_potsdam_7_13_label']
 
     # Comment if for submission
-    filename = ["top_potsdam_2_11_label", "top_potsdam_3_12_label", "top_potsdam_4_10_label",
-                "top_potsdam_6_11_label", "top_potsdam_7_12_label"]
+    """ filename = ["top_potsdam_2_11_label", "top_potsdam_3_12_label", "top_potsdam_4_10_label",
+                "top_potsdam_6_11_label", "top_potsdam_7_12_label"] """
     
 
     is_training = tf.placeholder(tf.bool, name="is_training")
@@ -39,16 +37,16 @@ if __name__ == '__main__':
     # Init logits maps
     num_img_files = len(filename)
     logits_maps = [None] * num_img_files
-    gt_annotation_maps = [None] * num_img_files # Comment if for submission
+    # gt_annotation_maps = [None] * num_img_files # Comment if for submission
     pred_annotation_maps = [None] * num_img_files
     top_img = [None] * num_img_files
-    num_matches = 0 # Comment if for submission
-    num_pixels = 0 # Comment if for submission
+    # num_matches = 0 # Comment if for submission
+    # num_pixels = 0 # Comment if for submission
     for i in range(num_img_files):
         top_img[i] = np.load("../ISPRS_semantic_labeling_Potsdam/npy_6_channel/" + filename[i].replace('label', 'RGBIR') + ".npy")
         logits_maps[i] = np.zeros((top_img[i].shape[0], top_img[i].shape[1], 6), dtype=np.float32)
-        gt_annotation_maps[i] = imread("../ISPRS_semantic_labeling_Potsdam/annotations/" + filename[i] + ".png", -1) # Comment if for submission
-        num_pixels += gt_annotation_maps[i].shape[0] * gt_annotation_maps[i].shape[1] # Comment if for submission
+        # gt_annotation_maps[i] = imread("../ISPRS_semantic_labeling_Potsdam/annotations/" + filename[i] + ".png", -1) # Comment if for submission
+        # num_pixels += gt_annotation_maps[i].shape[0] * gt_annotation_maps[i].shape[1] # Comment if for submission
 
     # Accumulate logits maps
     ckpt = tf.train.get_checkpoint_state(argv[1]) # checkpoint directory
@@ -58,14 +56,14 @@ if __name__ == '__main__':
         print(">> Restored:", ckpt_path)
         for i in range(num_img_files):
             print(ckpt_path, "inferring", filename[i])
-            input_batch_list, coordinate_batch_list, height, width = create_patch_batch_list(filename=filename[i], batch_size=128, num_channels=6)
+            input_batch_list, coordinate_batch_list, height, width = create_patch_batch_list(filename=filename[i], batch_size=512, num_channels=6)
             current_logits_map = batch_logits_map_inference(input_tensor, logits, keep_probability, sess, is_training, input_batch_list, coordinate_batch_list, height, width)
             logits_maps[i] += current_logits_map
 
     # Inferring
     for i in range(num_img_files):
         pred_annotation_maps[i] = np.argmax(logits_maps[i], axis=2)
-        num_matches += np.sum(pred_annotation_maps[i] == gt_annotation_maps[i]) # Comment if for submission
+        # num_matches += np.sum(pred_annotation_maps[i] == gt_annotation_maps[i]) # Comment if for submission
         height = pred_annotation_maps[i].shape[0]
         width = pred_annotation_maps[i].shape[1]
         output_image = np.zeros((height, width, 3), dtype=np.uint8)
@@ -96,4 +94,4 @@ if __name__ == '__main__':
         imwrite(join(argv[1], 'submission_cv2', filename[i] + '_class.png'), output_image)
 
     # Print ensemble accuracy
-    print("Ensembled Validation Accuracy:", num_matches / num_pixels) # Comment if for submission
+    # print("Ensembled Validation Accuracy:", num_matches / num_pixels) # Comment if for submission

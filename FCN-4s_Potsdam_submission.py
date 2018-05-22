@@ -22,7 +22,7 @@ tf.flags.DEFINE_string('mode', "train", "Mode train/ test/ visualize")
 
 MODEL_URL = 'http://www.vlfeat.org/matconvnet/models/imagenet-resnet-101-dag.mat'
 
-MAX_ITERATION = int(153600 + 1) # 25 epochs with batch size 64
+MAX_ITERATION = int(115200 + 1) # 25 epochs with batch size 64
 NUM_OF_CLASSES = 6
 IMAGE_SIZE = 224
 
@@ -100,6 +100,8 @@ def build_session(cuda_device):
 
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 6], name="input_image")
+    """ image2 = tf.map_fn(lambda img: tf.image.random_flip_left_right(img), image1, parallel_iterations=FLAGS.batch_size)
+    image = tf.map_fn(lambda img: tf.image.random_flip_up_down(img), image2, parallel_iterations=FLAGS.batch_size) """
     annotation = tf.placeholder(tf.int32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 1], name="annotation")
     is_training = tf.placeholder(tf.bool, name="is_training")
     pred_annotation, logits = inference(image, keep_probability, is_training)
