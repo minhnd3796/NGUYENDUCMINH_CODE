@@ -7,13 +7,13 @@ import datetime
 import Batch_manager_5channels as dataset
 import data_reader_5channels as reader
 import tensor_utils_5_channels as utils
-from infer_imagenet_resnet_101_5chan_v31 import resnet101_net
+from infer_imagenet_resnet_101_5chan_v3 import resnet101_net
 from sys import argv
 from os.path import join
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "32", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "../logs-resnet101_5channels_v3.1/", "path to logs directory")
+tf.flags.DEFINE_string("logs_dir", "../logs-FCN-8s-ResNet101-5c-v3.0/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
 tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to model mat")
@@ -152,7 +152,7 @@ def main(argv=None):
     image, logits, is_training, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation, train_writer, validation_writer = build_session(argv[1])
 
     print("Setting up image reader...")
-    train_records, valid_records = reader.read_dataset(FLAGS.data_dir)
+    train_records, valid_records = reader.read_dataset_test(FLAGS.data_dir)
     print(len(train_records))
     print(len(valid_records))
 
@@ -207,7 +207,7 @@ def main(argv=None):
     if FLAGS.mode == "train":
         for itr in xrange(MAX_ITERATION):
             train_images, train_annotations = train_dataset_reader.next_batch(saver, FLAGS.batch_size, image, logits, keep_probability, sess, is_training, FLAGS.logs_dir)
-            feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 0.75, is_training: True}
+            feed_dict = {image: train_images, annotation: train_annotations, keep_probability: 1.0, is_training: True}
             tf.set_random_seed(3796 + itr) # get deterministicly random dropouts
             sess.run(train_op, feed_dict=feed_dict)
 

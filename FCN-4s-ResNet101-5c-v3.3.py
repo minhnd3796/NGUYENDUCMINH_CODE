@@ -13,7 +13,7 @@ from os.path import join
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "32", "batch size for training")
-tf.flags.DEFINE_string("logs_dir", "../logs-resnet101_5channels_v3.2/", "path to logs directory")
+tf.flags.DEFINE_string("logs_dir", "../logs-FCN-4s-ResNet101-5c-v3.3/", "path to logs directory")
 tf.flags.DEFINE_string("data_dir", "../ISPRS_semantic_labeling_Vaihingen", "path to dataset")
 tf.flags.DEFINE_float("learning_rate", "1e-4", "Learning rate for Adam Optimizer")
 tf.flags.DEFINE_string("model_dir", "../pretrained_models/imagenet-resnet-101-dag.mat", "Path to model mat")
@@ -70,15 +70,21 @@ def inference(image, keep_prob, is_training):
         conv_t2 = utils.conv2d_transpose_strided(fuse_1, W_t2, b_t2, output_shape=tf.shape(net["res3b3_relu"]))
         fuse_2 = tf.add(conv_t2, net["res3b3_relu"], name="fuse_2")
 
+        deconv_shape3 = net["res2c_relu"].get_shape()
+        W_t3 = utils.weight_variable([4, 4, deconv_shape3[3].value, deconv_shape2[3].value], name="W_t3")
+        b_t3 = utils.bias_variable([deconv_shape3[3].value], name="b_t3")
+        conv_t3 = utils.conv2d_transpose_strided(fuse_2, W_t3, b_t3, output_shape=tf.shape(net["res2c_relu"]))
+        fuse_3 = tf.add(conv_t3, net["res2c_relu"], name="fuse_3")
+
         shape = tf.shape(image)
-        deconv_shape3 = tf.stack([shape[0], shape[1], shape[2], NUM_OF_CLASSES])
-        W_t3 = utils.weight_variable([16, 16, NUM_OF_CLASSES, deconv_shape2[3].value], name="W_t3")
-        b_t3 = utils.bias_variable([NUM_OF_CLASSES], name="b_t3")
-        conv_t3 = utils.conv2d_transpose_strided(fuse_2, W_t3, b_t3, output_shape=deconv_shape3, stride=8)
+        deconv_shape4 = tf.stack([shape[0], shape[1], shape[2], NUM_OF_CLASSES])
+        W_t4 = utils.weight_variable([8, 8, NUM_OF_CLASSES, deconv_shape3[3].value], name="W_t4")
+        b_t4 = utils.bias_variable([NUM_OF_CLASSES], name="b_t4")
+        conv_t4 = utils.conv2d_transpose_strided(fuse_3, W_t4, b_t4, output_shape=deconv_shape4, stride=4)
 
-        annotation_pred = tf.argmax(conv_t3, axis=3, name="prediction")
+        annotation_pred = tf.argmax(conv_t4, axis=3, name="prediction")
 
-    return tf.expand_dims(annotation_pred, dim=3), conv_t3
+    return tf.expand_dims(annotation_pred, dim=3), conv_t4
 
 def train(loss_val, var_list):
     optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
@@ -137,7 +143,7 @@ def build_session(cuda_device):
     sess = tf.Session()
 
     print("Setting up Saver...")
-    saver = tf.train.Saver()
+    saver = tf.train.Saver(max_to_keep=15)
     train_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/train', sess.graph)
     validation_writer = tf.summary.FileWriter(FLAGS.logs_dir + '/validation')
     sess.run(tf.global_variables_initializer())
@@ -152,7 +158,7 @@ def main(argv=None):
     image, logits, is_training, keep_probability, sess, annotation, train_op, loss, acc, loss_summary, acc_summary, saver, pred_annotation, train_writer, validation_writer = build_session(argv[1])
 
     print("Setting up image reader...")
-    train_records, valid_records = reader.read_dataset(FLAGS.data_dir)
+    train_records, valid_records = reader.read_dataset_test(FLAGS.data_dir)
     print(len(train_records))
     print(len(valid_records))
 
@@ -233,7 +239,7 @@ def main(argv=None):
                     f.write(str(itr) + ',' + str(valid_loss) + '\n')
                 with open(join(FLAGS.logs_dir, 'iter_val_acc.csv'), 'a') as f:
                     f.write(str(itr) + ',' + str(valid_acc) + '\n')
-                saver.save(sess, FLAGS.logs_dir + "model.ckpt", itr)
+                # saver.save(sess, FLAGS.logs_dir + "model.ckpt", itr)
 
     elif FLAGS.mode == "visualize":
         valid_images, valid_annotations = validation_dataset_reader.get_random_batch(FLAGS.batch_size)

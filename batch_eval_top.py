@@ -161,15 +161,15 @@ def eval_dir(input_tensor,
              horizontal_stride=112,
              is_validation=True):
     if is_validation:
-        filename = ['top_mosaic_09cm_area7', 'top_mosaic_09cm_area17', 'top_mosaic_09cm_area23', 'top_mosaic_09cm_area37']
-        # filename = ['top_mosaic_09cm_area7']
+        # filename = ['top_mosaic_09cm_area7', 'top_mosaic_09cm_area17', 'top_mosaic_09cm_area23', 'top_mosaic_09cm_area37']
+        filename = ['top_mosaic_09cm_area7']
         acc_logfile = 'epoch_val_acc.csv'
     else:
-        # filename = ['top_mosaic_09cm_area1']
-        filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
+        filename = ['top_mosaic_09cm_area1']
+        """ filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',
                     'top_mosaic_09cm_area11', 'top_mosaic_09cm_area13', 'top_mosaic_09cm_area15',
                     'top_mosaic_09cm_area21', 'top_mosaic_09cm_area26', 'top_mosaic_09cm_area28',
-                    'top_mosaic_09cm_area30', 'top_mosaic_09cm_area32', 'top_mosaic_09cm_area34']
+                    'top_mosaic_09cm_area30', 'top_mosaic_09cm_area32', 'top_mosaic_09cm_area34'] """
 
         # For submission only
         """ filename = ['top_mosaic_09cm_area1', 'top_mosaic_09cm_area3', 'top_mosaic_09cm_area5',

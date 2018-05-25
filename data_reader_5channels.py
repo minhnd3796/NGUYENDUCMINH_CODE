@@ -244,8 +244,8 @@ def read_dataset_test(image_dir):
         print("pickle file found")
     with open(pickle_filepath,"rb") as f:
         result = pickle.load(f)
-        training_records = result['train_5channels.test']
-        validation_records = result['validate_5channels.test']
+        training_records = result['train_5channels_test']
+        validation_records = result['validate_5channels_test']
         del result
     return training_records, validation_records
 
@@ -254,7 +254,7 @@ def create_image_list_test(image_dir):
     if not gfile.Exists(image_dir):
         print("Image directory '" + image_dir + "' not found.")
         return None
-    directories = ['train_5channels.test', 'validate_5channels.test']
+    directories = ['train_5channels_test', 'validate_5channels_test']
     image_list = {}
     for directory in directories:
         file_list = []
@@ -266,7 +266,7 @@ def create_image_list_test(image_dir):
         else:
             for f in file_list:
                 filename = os.path.splitext(f.split("/")[-1])[0]
-                annotation_file = join(image_dir, "train_validate_gt_5channels.test", filename + ".png")
+                annotation_file = join(image_dir, "train_validate_gt_5channels_test", filename + ".png")
                 if exists(annotation_file):
                     record = {'image': f, 'annotation': annotation_file, 'filename': filename}
                     image_list[directory].append(record)
