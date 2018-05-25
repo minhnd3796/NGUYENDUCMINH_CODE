@@ -8,7 +8,10 @@ Bachelor Final Project: Environment Setup and Tutorials
   - Python 3 Interpreter.
   - Python 3 libraries: OpenCV3, Tensorflow 1.4
   - Ubuntu 16.04.
-2. Tutorials:
+2. Pretrained models: download them to dir named pretrained_models
+  - VGG19: http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat
+  - ResNet101: http://www.vlfeat.org/matconvnet/models/imagenet-resnet-101-dag.mat
+3. Tutorials:
   - Run demos:
     + $ python3 FCN-4s-ResNet101-6c-v3.3.py 0 (train FCN-4s-ResNet101-6c-v3.3 model)
     + $ python3 FCN-4s-ResNet101-5c-v3.3.py 0 (train FCN-4s-ResNet101-5c-v3.3 model)
@@ -21,7 +24,7 @@ Bachelor Final Project: Environment Setup and Tutorials
     ISPRS_semantic_labeling_Potsdam directory).
     + Vaihingen: $ python3 sampling_image_5channels.py
     + Potsdam: $ get_npy_Potsdam.py && sampling_image_potsdam_v4.py
-3. Customisations:
+4. Customisations:
   - Per patch accuracy evaluation: batch_eval_*.py, next_batch* methods in Batch_manager*
 
 For detailed support and further collaboration: PLEASE contact me:
