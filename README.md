@@ -1,5 +1,5 @@
-Họ và tên: Trịnh Văn Duy
-MSSV: 20130614
+Họ và tên: Nguyễn Đức Minh
+MSSV: 20146488
 
 
 Download dữ liệu tại địa chỉ: 
