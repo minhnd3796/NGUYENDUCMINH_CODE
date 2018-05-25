@@ -97,7 +97,7 @@ def train(loss_val, var_list):
     return optimizer.apply_gradients(grads)
 
 def build_session(cuda_device):
-    os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
+    # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
 
     keep_probability = tf.placeholder(tf.float32, name="keep_probabilty")
     image = tf.placeholder(tf.float32, shape=[None, IMAGE_SIZE, IMAGE_SIZE, 6], name="input_image")

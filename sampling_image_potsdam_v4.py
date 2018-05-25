@@ -6,9 +6,9 @@ from cv2 import imread, imwrite
 from os.path import exists, join, splitext
 from os import listdir, mkdir
 
-base_dir_train = "../ISPRS_semantic_labeling_Potsdam/training_set_submission"
+base_dir_train = "../ISPRS_semantic_labeling_Potsdam/training_set"
 base_dir_validate = "../ISPRS_semantic_labeling_Potsdam/validation_set"
-base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Potsdam/ground_truths_submission"
+base_dir_train_validate_gt = "../ISPRS_semantic_labeling_Potsdam/ground_truths"
 base_dir_top = "../ISPRS_semantic_labeling_Potsdam/npy_6_channel"
 base_dir_annotations = "../ISPRS_semantic_labeling_Potsdam/annotations"
 
@@ -127,7 +127,7 @@ def create_validation_test_dataset():
 
 if __name__=="__main__":
     np.random.seed(3796)
-    create_training_dataset()
-    # create_validation_dataset()
-    """ create_training_test_dataset()
-    create_validation_test_dataset() """
+    """ create_training_dataset()
+    create_validation_dataset() """
+    create_training_test_dataset()
+    create_validation_test_dataset()
